@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true
@@ -24,3 +24,24 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+jwt:
+  secret: ysk-cms-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm
+  access-token-expiration: 900000      # 15분 (밀리초)
+  refresh-token-expiration: 604800000  # 7일 (밀리초)
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin1234
+  bucket-name: ysk-cms
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+    persist-authorization: true
