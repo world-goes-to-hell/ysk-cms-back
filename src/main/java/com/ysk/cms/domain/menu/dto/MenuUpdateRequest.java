@@ -39,4 +39,9 @@ public class MenuUpdateRequest {
 
     @Size(max = 500, message = "설명은 500자 이하로 입력해주세요")
     private String description;
+
+    @Size(max = 255, message = "컴포넌트 경로는 255자 이하로 입력해주세요")
+    private String componentPath;
+
+    private String relatedRoutes;
 }

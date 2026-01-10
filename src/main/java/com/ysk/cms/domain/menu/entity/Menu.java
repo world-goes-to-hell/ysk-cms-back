@@ -68,9 +68,16 @@ public class Menu extends BaseEntity {
     @Column(length = 500)
     private String description;
 
+    @Column(name = "component_path", length = 255)
+    private String componentPath;
+
+    @Column(name = "related_routes", columnDefinition = "TEXT")
+    private String relatedRoutes;
+
     public void update(String name, String code, MenuType type, String url,
                        String icon, Integer sortOrder, MenuStatus status,
-                       String target, String roles, String description) {
+                       String target, String roles, String description,
+                       String componentPath, String relatedRoutes) {
         this.name = name;
         this.code = code;
         this.type = type;
@@ -81,6 +88,8 @@ public class Menu extends BaseEntity {
         this.target = target;
         this.roles = roles;
         this.description = description;
+        this.componentPath = componentPath;
+        this.relatedRoutes = relatedRoutes;
     }
 
     public void updateParent(Menu parent) {

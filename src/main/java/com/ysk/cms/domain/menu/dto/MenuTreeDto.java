@@ -23,6 +23,8 @@ public class MenuTreeDto {
     private MenuStatus status;
     private String target;
     private String roles;
+    private String componentPath;
+    private String relatedRoutes;
     private List<MenuTreeDto> children;
 
     public static MenuTreeDto from(Menu menu) {
@@ -37,6 +39,8 @@ public class MenuTreeDto {
                 .status(menu.getStatus())
                 .target(menu.getTarget())
                 .roles(menu.getRoles())
+                .componentPath(menu.getComponentPath())
+                .relatedRoutes(menu.getRelatedRoutes())
                 .children(new ArrayList<>())
                 .build();
     }

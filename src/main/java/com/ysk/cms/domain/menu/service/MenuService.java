@@ -95,6 +95,8 @@ public class MenuService {
                 .target(request.getTarget())
                 .roles(request.getRoles())
                 .description(request.getDescription())
+                .componentPath(request.getComponentPath())
+                .relatedRoutes(request.getRelatedRoutes())
                 .build();
 
         Menu savedMenu = menuRepository.save(menu);
@@ -144,7 +146,9 @@ public class MenuService {
                 request.getStatus() != null ? request.getStatus() : menu.getStatus(),
                 request.getTarget(),
                 request.getRoles(),
-                request.getDescription()
+                request.getDescription(),
+                request.getComponentPath(),
+                request.getRelatedRoutes()
         );
 
         return MenuDto.from(menu);

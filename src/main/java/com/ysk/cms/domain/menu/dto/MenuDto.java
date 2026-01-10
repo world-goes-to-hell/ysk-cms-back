@@ -25,6 +25,8 @@ public class MenuDto {
     private String target;
     private String roles;
     private String description;
+    private String componentPath;
+    private String relatedRoutes;
     private Integer depth;
     private Boolean hasChildren;
     private LocalDateTime createdAt;
@@ -45,6 +47,8 @@ public class MenuDto {
                 .target(menu.getTarget())
                 .roles(menu.getRoles())
                 .description(menu.getDescription())
+                .componentPath(menu.getComponentPath())
+                .relatedRoutes(menu.getRelatedRoutes())
                 .depth(menu.getDepth())
                 .hasChildren(menu.hasChildren())
                 .createdAt(menu.getCreatedAt())

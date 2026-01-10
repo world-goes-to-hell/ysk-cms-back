@@ -27,13 +27,20 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @Operation(summary = "게시판 목록 조회")
-    @GetMapping
+    @Operation(summary = "게시판 목록 조회 (페이징)")
+    @GetMapping("/paged")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
-    public ApiResponse<PageResponse<BoardDto>> getBoards(
+    public ApiResponse<PageResponse<BoardDto>> getBoardsPaged(
             @PathVariable String siteCode,
             @PageableDefault(size = 20, sort = "sortOrder", direction = Sort.Direction.ASC) Pageable pageable) {
         return ApiResponse.success(boardService.getBoardsBySite(siteCode, pageable));
+    }
+
+    @Operation(summary = "게시판 전체 목록 조회")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
+    public ApiResponse<List<BoardDto>> getBoards(@PathVariable String siteCode) {
+        return ApiResponse.success(boardService.getBoardsBySite(siteCode));
     }
 
     @Operation(summary = "활성 게시판 목록 조회")
