@@ -1,4 +1,4 @@
-package com.ysk.cms.domain.media.entity;
+package com.ysk.cms.domain.atchfile.entity;
 
 import com.ysk.cms.common.entity.BaseEntity;
 import com.ysk.cms.domain.site.entity.Site;
@@ -6,15 +6,15 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "media", indexes = {
-        @Index(name = "idx_media_site", columnList = "site_id"),
-        @Index(name = "idx_media_type", columnList = "type")
+@Table(name = "atch_files", indexes = {
+        @Index(name = "idx_atch_file_site", columnList = "site_id"),
+        @Index(name = "idx_atch_file_type", columnList = "type")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Media extends BaseEntity {
+public class AtchFile extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
@@ -37,7 +37,7 @@ public class Media extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MediaType type;
+    private AtchFileType type;
 
     @Column(length = 500)
     private String description;

@@ -10,7 +10,7 @@ import java.util.List;
 public class DashboardStatsDto {
 
     private List<StatItem> stats;
-    private PostStats postStats;
+    private ArticleStats articleStats;
 
     @Getter
     @Builder
@@ -25,7 +25,7 @@ public class DashboardStatsDto {
 
     @Getter
     @Builder
-    public static class PostStats {
+    public static class ArticleStats {
         private Long today;
         private Long thisWeek;
         private Long thisMonth;

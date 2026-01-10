@@ -1,4 +1,4 @@
-package com.ysk.cms.domain.post.entity;
+package com.ysk.cms.domain.article.entity;
 
 import com.ysk.cms.common.entity.BaseEntity;
 import com.ysk.cms.domain.board.entity.Board;
@@ -8,14 +8,14 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "posts", indexes = {
-        @Index(name = "idx_post_board_created", columnList = "board_id, created_at DESC")
+@Table(name = "board_articles", indexes = {
+        @Index(name = "idx_article_board_created", columnList = "board_id, created_at DESC")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Post extends BaseEntity {
+public class BoardArticle extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
@@ -46,7 +46,7 @@ public class Post extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private PostStatus status = PostStatus.DRAFT;
+    private ArticleStatus status = ArticleStatus.DRAFT;
 
     private LocalDateTime publishedAt;
 
@@ -55,7 +55,7 @@ public class Post extends BaseEntity {
     private String answer;
 
     public void update(String title, String content, String author,
-                       Boolean isPinned, Boolean isSecret, PostStatus status, String answer) {
+                       Boolean isPinned, Boolean isSecret, ArticleStatus status, String answer) {
         this.title = title;
         this.content = content;
         this.author = author;
@@ -64,13 +64,13 @@ public class Post extends BaseEntity {
         this.status = status;
         this.answer = answer;
 
-        if (status == PostStatus.PUBLISHED && this.publishedAt == null) {
+        if (status == ArticleStatus.PUBLISHED && this.publishedAt == null) {
             this.publishedAt = LocalDateTime.now();
         }
     }
 
     public void publish() {
-        this.status = PostStatus.PUBLISHED;
+        this.status = ArticleStatus.PUBLISHED;
         this.publishedAt = LocalDateTime.now();
     }
 
@@ -79,6 +79,6 @@ public class Post extends BaseEntity {
     }
 
     public boolean isPublished() {
-        return this.status == PostStatus.PUBLISHED;
+        return this.status == ArticleStatus.PUBLISHED;
     }
 }

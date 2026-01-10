@@ -13,7 +13,7 @@ public class DashboardResponseDto {
     private DashboardStatsDto.StatItem contents;
     private DashboardStatsDto.StatItem visits;
     private DashboardStatsDto.StatItem signups;
-    private DashboardStatsDto.PostStats postStats;
-    private List<RecentPostDto> recentPosts;
+    private DashboardStatsDto.ArticleStats articleStats;
+    private List<RecentArticleDto> recentArticles;
     private List<RecentActivityDto> recentActivities;
 }

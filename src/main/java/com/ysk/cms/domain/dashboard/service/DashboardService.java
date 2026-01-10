@@ -3,15 +3,14 @@ package com.ysk.cms.domain.dashboard.service;
 import com.ysk.cms.domain.activity.entity.ActivityLog;
 import com.ysk.cms.domain.activity.repository.ActivityLogRepository;
 import com.ysk.cms.domain.dashboard.dto.*;
-import com.ysk.cms.domain.post.entity.Post;
-import com.ysk.cms.domain.post.repository.PostRepository;
+import com.ysk.cms.domain.article.entity.BoardArticle;
+import com.ysk.cms.domain.article.repository.BoardArticleRepository;
 import com.ysk.cms.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,7 +23,7 @@ import java.util.List;
 public class DashboardService {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
+    private final BoardArticleRepository articleRepository;
     private final ActivityLogRepository activityLogRepository;
 
     public DashboardResponseDto getDashboardData() {
@@ -33,8 +32,8 @@ public class DashboardService {
                 .contents(getContentStats())
                 .visits(getVisitStats())
                 .signups(getSignupStats())
-                .postStats(getPostStats())
-                .recentPosts(getRecentPosts(5))
+                .articleStats(getArticleStats())
+                .recentArticles(getRecentArticles(5))
                 .recentActivities(getRecentActivities(4))
                 .build();
     }
@@ -68,17 +67,17 @@ public class DashboardService {
     }
 
     private DashboardStatsDto.StatItem getContentStats() {
-        long totalContents = postRepository.countAllActive();
+        long totalContents = articleRepository.countAllActive();
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastWeekStart = now.minusWeeks(1).with(LocalTime.MIN);
         LocalDateTime twoWeeksAgoStart = now.minusWeeks(2).with(LocalTime.MIN);
 
-        long thisWeekPosts = postRepository.countPostsCreatedSince(lastWeekStart);
-        long lastWeekPosts = postRepository.countPostsCreatedBetween(twoWeeksAgoStart, lastWeekStart);
+        long thisWeekArticles = articleRepository.countArticlesCreatedSince(lastWeekStart);
+        long lastWeekArticles = articleRepository.countArticlesCreatedBetween(twoWeeksAgoStart, lastWeekStart);
 
-        String trend = calculateTrend(thisWeekPosts, lastWeekPosts);
-        boolean trendUp = thisWeekPosts >= lastWeekPosts;
+        String trend = calculateTrend(thisWeekArticles, lastWeekArticles);
+        boolean trendUp = thisWeekArticles >= lastWeekArticles;
 
         return DashboardStatsDto.StatItem.builder()
                 .id("contents")
@@ -130,26 +129,26 @@ public class DashboardService {
                 .build();
     }
 
-    private DashboardStatsDto.PostStats getPostStats() {
+    private DashboardStatsDto.ArticleStats getArticleStats() {
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         LocalDateTime weekStart = LocalDate.now().minusDays(LocalDate.now().getDayOfWeek().getValue() - 1).atStartOfDay();
         LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
 
-        long today = postRepository.countPostsCreatedSince(todayStart);
-        long thisWeek = postRepository.countPostsCreatedSince(weekStart);
-        long thisMonth = postRepository.countPostsCreatedSince(monthStart);
+        long today = articleRepository.countArticlesCreatedSince(todayStart);
+        long thisWeek = articleRepository.countArticlesCreatedSince(weekStart);
+        long thisMonth = articleRepository.countArticlesCreatedSince(monthStart);
 
-        return DashboardStatsDto.PostStats.builder()
+        return DashboardStatsDto.ArticleStats.builder()
                 .today(today)
                 .thisWeek(thisWeek)
                 .thisMonth(thisMonth)
                 .build();
     }
 
-    private List<RecentPostDto> getRecentPosts(int limit) {
-        List<Post> posts = postRepository.findRecentPosts(PageRequest.of(0, limit));
-        return posts.stream()
-                .map(RecentPostDto::from)
+    private List<RecentArticleDto> getRecentArticles(int limit) {
+        List<BoardArticle> articles = articleRepository.findRecentArticles(PageRequest.of(0, limit));
+        return articles.stream()
+                .map(RecentArticleDto::from)
                 .toList();
     }
 

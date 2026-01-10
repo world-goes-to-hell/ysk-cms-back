@@ -1,6 +1,6 @@
-package com.ysk.cms.domain.media.entity;
+package com.ysk.cms.domain.atchfile.entity;
 
-public enum MediaType {
+public enum AtchFileType {
     IMAGE,      // 이미지 (jpg, png, gif, webp 등)
     VIDEO,      // 비디오 (mp4, webm 등)
     AUDIO,      // 오디오 (mp3, wav 등)

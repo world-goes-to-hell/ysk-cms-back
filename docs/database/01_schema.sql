@@ -118,8 +118,8 @@ CREATE TABLE boards (
     CONSTRAINT fk_boards_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3.2 게시글 테이블
-CREATE TABLE posts (
+-- 3.2 게시글 테이블 (board_articles)
+CREATE TABLE board_articles (
     id BIGINT NOT NULL AUTO_INCREMENT,
     board_id BIGINT NOT NULL,
     title VARCHAR(300) NOT NULL,
@@ -131,11 +131,14 @@ CREATE TABLE posts (
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     published_at DATETIME(6),
     answer TEXT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
     PRIMARY KEY (id),
-    INDEX idx_post_board_created (board_id, created_at DESC),
-    CONSTRAINT fk_posts_board FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
+    INDEX idx_article_board_created (board_id, created_at DESC),
+    CONSTRAINT fk_board_articles_board FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -164,10 +167,10 @@ CREATE TABLE pages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 5. 미디어 테이블
+-- 5. 첨부파일 테이블 (atch_files)
 -- =============================================
 
-CREATE TABLE media (
+CREATE TABLE atch_files (
     id BIGINT NOT NULL AUTO_INCREMENT,
     site_id BIGINT,
     original_name VARCHAR(255) NOT NULL,
@@ -180,12 +183,15 @@ CREATE TABLE media (
     alt_text VARCHAR(500),
     width INT,
     height INT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
     PRIMARY KEY (id),
-    INDEX idx_media_site (site_id),
-    INDEX idx_media_type (type),
-    CONSTRAINT fk_media_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
+    INDEX idx_atch_file_site (site_id),
+    INDEX idx_atch_file_type (type),
+    CONSTRAINT fk_atch_files_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================

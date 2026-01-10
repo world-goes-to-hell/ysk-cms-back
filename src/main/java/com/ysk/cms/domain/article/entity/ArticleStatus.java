@@ -1,6 +1,6 @@
-package com.ysk.cms.domain.post.entity;
+package com.ysk.cms.domain.article.entity;
 
-public enum PostStatus {
+public enum ArticleStatus {
     DRAFT,      // 임시저장
     PUBLISHED,  // 게시됨
     ARCHIVED    // 보관됨

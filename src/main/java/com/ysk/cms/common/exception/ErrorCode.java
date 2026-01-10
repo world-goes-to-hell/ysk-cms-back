@@ -36,18 +36,18 @@ public enum ErrorCode {
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "게시판을 찾을 수 없습니다."),
     DUPLICATE_BOARD_CODE(HttpStatus.CONFLICT, "B002", "이미 존재하는 게시판 코드입니다."),
 
-    // Post
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "게시글을 찾을 수 없습니다."),
+    // Article (게시글)
+    ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "AR001", "게시글을 찾을 수 없습니다."),
 
     // Page
     PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "PG001", "페이지를 찾을 수 없습니다."),
     DUPLICATE_PAGE_SLUG(HttpStatus.CONFLICT, "PG002", "이미 존재하는 페이지 슬러그입니다."),
 
-    // Media
-    MEDIA_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "미디어를 찾을 수 없습니다."),
-    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "M002", "파일 업로드에 실패했습니다."),
-    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "M003", "허용되지 않은 파일 형식입니다."),
-    FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "M004", "파일 크기가 초과되었습니다."),
+    // AtchFile (첨부파일)
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "AF001", "첨부파일을 찾을 수 없습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AF002", "파일 업로드에 실패했습니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "AF003", "허용되지 않은 파일 형식입니다."),
+    FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "AF004", "파일 크기가 초과되었습니다."),
 
     // Menu
     MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "MN001", "메뉴를 찾을 수 없습니다."),

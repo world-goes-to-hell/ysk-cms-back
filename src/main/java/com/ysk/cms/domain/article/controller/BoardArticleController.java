@@ -1,13 +1,13 @@
-package com.ysk.cms.domain.post.controller;
+package com.ysk.cms.domain.article.controller;
 
 import com.ysk.cms.common.dto.ApiResponse;
 import com.ysk.cms.common.dto.PageResponse;
-import com.ysk.cms.domain.post.dto.PostCreateRequest;
-import com.ysk.cms.domain.post.dto.PostDto;
-import com.ysk.cms.domain.post.dto.PostListDto;
-import com.ysk.cms.domain.post.dto.PostUpdateRequest;
-import com.ysk.cms.domain.post.entity.PostStatus;
-import com.ysk.cms.domain.post.service.PostService;
+import com.ysk.cms.domain.article.dto.BoardArticleCreateRequest;
+import com.ysk.cms.domain.article.dto.BoardArticleDto;
+import com.ysk.cms.domain.article.dto.BoardArticleListDto;
+import com.ysk.cms.domain.article.dto.BoardArticleUpdateRequest;
+import com.ysk.cms.domain.article.entity.ArticleStatus;
+import com.ysk.cms.domain.article.service.BoardArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,102 +21,102 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "게시글 관리", description = "게시글 작성, 수정, 삭제, 검색")
 @RestController
-@RequestMapping("/api/sites/{siteCode}/boards/{boardCode}/posts")
+@RequestMapping("/api/sites/{siteCode}/boards/{boardCode}/articles")
 @RequiredArgsConstructor
-public class PostController {
+public class BoardArticleController {
 
-    private final PostService postService;
+    private final BoardArticleService articleService;
 
     @Operation(summary = "게시글 목록 조회")
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
-    public ApiResponse<PageResponse<PostListDto>> getPosts(
+    public ApiResponse<PageResponse<BoardArticleListDto>> getArticles(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @RequestParam(required = false) PostStatus status,
+            @RequestParam(required = false) ArticleStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         if (status != null) {
-            return ApiResponse.success(postService.getPostsByStatus(siteCode, boardCode, status, pageable));
+            return ApiResponse.success(articleService.getArticlesByStatus(siteCode, boardCode, status, pageable));
         }
-        return ApiResponse.success(postService.getPosts(siteCode, boardCode, pageable));
+        return ApiResponse.success(articleService.getArticles(siteCode, boardCode, pageable));
     }
 
     @Operation(summary = "공지 게시글 목록 조회")
     @GetMapping("/pinned")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
-    public ApiResponse<PageResponse<PostListDto>> getPinnedPosts(
+    public ApiResponse<PageResponse<BoardArticleListDto>> getPinnedArticles(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.success(postService.getPinnedPosts(siteCode, boardCode, pageable));
+        return ApiResponse.success(articleService.getPinnedArticles(siteCode, boardCode, pageable));
     }
 
     @Operation(summary = "게시글 검색")
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
-    public ApiResponse<PageResponse<PostListDto>> searchPosts(
+    public ApiResponse<PageResponse<BoardArticleListDto>> searchArticles(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
             @RequestParam String keyword,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.success(postService.searchPosts(siteCode, boardCode, keyword, pageable));
+        return ApiResponse.success(articleService.searchArticles(siteCode, boardCode, keyword, pageable));
     }
 
     @Operation(summary = "게시글 상세 조회")
-    @GetMapping("/{postId}")
+    @GetMapping("/{articleId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
-    public ApiResponse<PostDto> getPost(
+    public ApiResponse<BoardArticleDto> getArticle(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @PathVariable Long postId,
+            @PathVariable Long articleId,
             @RequestParam(defaultValue = "false") boolean incrementView) {
         if (incrementView) {
-            return ApiResponse.success(postService.getPostAndIncrementView(siteCode, boardCode, postId));
+            return ApiResponse.success(articleService.getArticleAndIncrementView(siteCode, boardCode, articleId));
         }
-        return ApiResponse.success(postService.getPost(siteCode, boardCode, postId));
+        return ApiResponse.success(articleService.getArticle(siteCode, boardCode, articleId));
     }
 
     @Operation(summary = "게시글 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
-    public ApiResponse<PostDto> createPost(
+    public ApiResponse<BoardArticleDto> createArticle(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @Valid @RequestBody PostCreateRequest request) {
-        return ApiResponse.success(postService.createPost(siteCode, boardCode, request));
+            @Valid @RequestBody BoardArticleCreateRequest request) {
+        return ApiResponse.success(articleService.createArticle(siteCode, boardCode, request));
     }
 
     @Operation(summary = "게시글 수정")
-    @PutMapping("/{postId}")
+    @PutMapping("/{articleId}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
-    public ApiResponse<PostDto> updatePost(
+    public ApiResponse<BoardArticleDto> updateArticle(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @PathVariable Long postId,
-            @Valid @RequestBody PostUpdateRequest request) {
-        return ApiResponse.success(postService.updatePost(siteCode, boardCode, postId, request));
+            @PathVariable Long articleId,
+            @Valid @RequestBody BoardArticleUpdateRequest request) {
+        return ApiResponse.success(articleService.updateArticle(siteCode, boardCode, articleId, request));
     }
 
     @Operation(summary = "게시글 삭제")
-    @DeleteMapping("/{postId}")
+    @DeleteMapping("/{articleId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
-    public ApiResponse<Void> deletePost(
+    public ApiResponse<Void> deleteArticle(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @PathVariable Long postId) {
-        postService.deletePost(siteCode, boardCode, postId);
+            @PathVariable Long articleId) {
+        articleService.deleteArticle(siteCode, boardCode, articleId);
         return ApiResponse.success(null);
     }
 
     @Operation(summary = "게시글 발행")
-    @PatchMapping("/{postId}/publish")
+    @PatchMapping("/{articleId}/publish")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
-    public ApiResponse<PostDto> publishPost(
+    public ApiResponse<BoardArticleDto> publishArticle(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
-            @PathVariable Long postId) {
-        return ApiResponse.success(postService.publishPost(siteCode, boardCode, postId));
+            @PathVariable Long articleId) {
+        return ApiResponse.success(articleService.publishArticle(siteCode, boardCode, articleId));
     }
 }

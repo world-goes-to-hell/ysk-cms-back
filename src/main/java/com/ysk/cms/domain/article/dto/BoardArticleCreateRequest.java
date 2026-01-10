@@ -1,6 +1,6 @@
-package com.ysk.cms.domain.post.dto;
+package com.ysk.cms.domain.article.dto;
 
-import com.ysk.cms.domain.post.entity.PostStatus;
+import com.ysk.cms.domain.article.entity.ArticleStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class PostUpdateRequest {
+public class BoardArticleCreateRequest {
 
     @NotBlank(message = "제목은 필수입니다")
     @Size(max = 300, message = "제목은 300자 이하여야 합니다")
@@ -19,11 +19,9 @@ public class PostUpdateRequest {
     @Size(max = 50, message = "작성자명은 50자 이하여야 합니다")
     private String author;
 
-    private Boolean isPinned;
+    private Boolean isPinned = false;
 
-    private Boolean isSecret;
+    private Boolean isSecret = false;
 
-    private PostStatus status;
-
-    private String answer;
+    private ArticleStatus status = ArticleStatus.DRAFT;
 }

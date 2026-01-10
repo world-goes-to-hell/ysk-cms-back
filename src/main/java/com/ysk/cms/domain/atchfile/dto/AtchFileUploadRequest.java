@@ -1,12 +1,14 @@
-package com.ysk.cms.domain.media.dto;
+package com.ysk.cms.domain.atchfile.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
-public class MediaUpdateRequest {
+public class AtchFileUploadRequest {
 
     @Size(max = 500, message = "설명은 500자 이하여야 합니다")
     private String description;

@@ -1,13 +1,13 @@
-package com.ysk.cms.domain.media.service;
+package com.ysk.cms.domain.atchfile.service;
 
 import com.ysk.cms.common.dto.PageResponse;
 import com.ysk.cms.common.exception.BusinessException;
 import com.ysk.cms.common.exception.ErrorCode;
 import com.ysk.cms.config.MinioConfig;
-import com.ysk.cms.domain.media.dto.*;
-import com.ysk.cms.domain.media.entity.Media;
-import com.ysk.cms.domain.media.entity.MediaType;
-import com.ysk.cms.domain.media.repository.MediaRepository;
+import com.ysk.cms.domain.atchfile.dto.*;
+import com.ysk.cms.domain.atchfile.entity.AtchFile;
+import com.ysk.cms.domain.atchfile.entity.AtchFileType;
+import com.ysk.cms.domain.atchfile.repository.AtchFileRepository;
 import com.ysk.cms.domain.site.entity.Site;
 import com.ysk.cms.domain.site.repository.SiteRepository;
 import io.minio.*;
@@ -34,9 +34,9 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MediaService {
+public class AtchFileService {
 
-    private final MediaRepository mediaRepository;
+    private final AtchFileRepository atchFileRepository;
     private final SiteRepository siteRepository;
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
@@ -47,44 +47,44 @@ public class MediaService {
     private static final Set<String> DOCUMENT_EXTENSIONS = Set.of("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "hwp");
     private static final Set<String> ARCHIVE_EXTENSIONS = Set.of("zip", "rar", "7z", "tar", "gz");
 
-    public PageResponse<MediaListDto> getMediaList(Pageable pageable) {
-        Page<Media> mediaPage = mediaRepository.findAllActive(pageable);
+    public PageResponse<AtchFileListDto> getFileList(Pageable pageable) {
+        Page<AtchFile> filePage = atchFileRepository.findAllActive(pageable);
         String baseUrl = getBaseUrl();
-        return PageResponse.of(mediaPage.map(m -> MediaListDto.from(m, baseUrl)));
+        return PageResponse.of(filePage.map(f -> AtchFileListDto.from(f, baseUrl)));
     }
 
-    public PageResponse<MediaListDto> getMediaListBySite(String siteCode, Pageable pageable) {
-        Page<Media> mediaPage = mediaRepository.findBySiteCode(siteCode, pageable);
+    public PageResponse<AtchFileListDto> getFileListBySite(String siteCode, Pageable pageable) {
+        Page<AtchFile> filePage = atchFileRepository.findBySiteCode(siteCode, pageable);
         String baseUrl = getBaseUrl();
-        return PageResponse.of(mediaPage.map(m -> MediaListDto.from(m, baseUrl)));
+        return PageResponse.of(filePage.map(f -> AtchFileListDto.from(f, baseUrl)));
     }
 
-    public PageResponse<MediaListDto> getMediaListBySiteAndType(String siteCode, MediaType type, Pageable pageable) {
-        Page<Media> mediaPage = mediaRepository.findBySiteCodeAndType(siteCode, type, pageable);
+    public PageResponse<AtchFileListDto> getFileListBySiteAndType(String siteCode, AtchFileType type, Pageable pageable) {
+        Page<AtchFile> filePage = atchFileRepository.findBySiteCodeAndType(siteCode, type, pageable);
         String baseUrl = getBaseUrl();
-        return PageResponse.of(mediaPage.map(m -> MediaListDto.from(m, baseUrl)));
+        return PageResponse.of(filePage.map(f -> AtchFileListDto.from(f, baseUrl)));
     }
 
-    public PageResponse<MediaListDto> searchMedia(String siteCode, String keyword, Pageable pageable) {
-        Page<Media> mediaPage = mediaRepository.searchByKeyword(siteCode, keyword, pageable);
+    public PageResponse<AtchFileListDto> searchFiles(String siteCode, String keyword, Pageable pageable) {
+        Page<AtchFile> filePage = atchFileRepository.searchByKeyword(siteCode, keyword, pageable);
         String baseUrl = getBaseUrl();
-        return PageResponse.of(mediaPage.map(m -> MediaListDto.from(m, baseUrl)));
+        return PageResponse.of(filePage.map(f -> AtchFileListDto.from(f, baseUrl)));
     }
 
-    public MediaDto getMedia(Long id) {
-        Media media = mediaRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
-        return MediaDto.from(media, getBaseUrl());
+    public AtchFileDto getFile(Long id) {
+        AtchFile file = atchFileRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+        return AtchFileDto.from(file, getBaseUrl());
     }
 
-    public MediaDto getMediaBySite(String siteCode, Long id) {
-        Media media = mediaRepository.findBySiteCodeAndId(siteCode, id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
-        return MediaDto.from(media, getBaseUrl());
+    public AtchFileDto getFileBySite(String siteCode, Long id) {
+        AtchFile file = atchFileRepository.findBySiteCodeAndId(siteCode, id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+        return AtchFileDto.from(file, getBaseUrl());
     }
 
     @Transactional
-    public MediaDto uploadMedia(String siteCode, MultipartFile file, MediaUploadRequest request) {
+    public AtchFileDto uploadFile(String siteCode, MultipartFile file, AtchFileUploadRequest request) {
         validateFile(file);
 
         Site site = null;
@@ -97,11 +97,11 @@ public class MediaService {
         String extension = getExtension(originalName);
         String storedName = generateStoredName(extension);
         String filePath = generateFilePath(siteCode, storedName);
-        MediaType mediaType = determineMediaType(extension);
+        AtchFileType fileType = determineFileType(extension);
 
         Integer width = null;
         Integer height = null;
-        if (mediaType == MediaType.IMAGE) {
+        if (fileType == AtchFileType.IMAGE) {
             try {
                 BufferedImage image = ImageIO.read(file.getInputStream());
                 if (image != null) {
@@ -127,92 +127,92 @@ public class MediaService {
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
 
-        Media media = Media.builder()
+        AtchFile atchFile = AtchFile.builder()
                 .site(site)
                 .originalName(originalName)
                 .storedName(storedName)
                 .filePath(filePath)
                 .mimeType(file.getContentType())
                 .fileSize(file.getSize())
-                .type(mediaType)
+                .type(fileType)
                 .description(request != null ? request.getDescription() : null)
                 .altText(request != null ? request.getAltText() : null)
                 .width(width)
                 .height(height)
                 .build();
 
-        Media savedMedia = mediaRepository.save(media);
-        return MediaDto.from(savedMedia, getBaseUrl());
+        AtchFile savedFile = atchFileRepository.save(atchFile);
+        return AtchFileDto.from(savedFile, getBaseUrl());
     }
 
     @Transactional
-    public List<MediaDto> uploadMultipleMedia(String siteCode, List<MultipartFile> files, MediaUploadRequest request) {
+    public List<AtchFileDto> uploadMultipleFiles(String siteCode, List<MultipartFile> files, AtchFileUploadRequest request) {
         return files.stream()
-                .map(file -> uploadMedia(siteCode, file, request))
+                .map(file -> uploadFile(siteCode, file, request))
                 .toList();
     }
 
     @Transactional
-    public MediaDto updateMedia(Long id, MediaUpdateRequest request) {
-        Media media = mediaRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
+    public AtchFileDto updateFile(Long id, AtchFileUpdateRequest request) {
+        AtchFile file = atchFileRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
-        media.update(request.getDescription(), request.getAltText());
-        return MediaDto.from(media, getBaseUrl());
+        file.update(request.getDescription(), request.getAltText());
+        return AtchFileDto.from(file, getBaseUrl());
     }
 
     @Transactional
-    public void deleteMedia(Long id) {
-        Media media = mediaRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
+    public void deleteFile(Long id) {
+        AtchFile file = atchFileRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(minioConfig.getBucketName())
-                            .object(media.getFilePath())
+                            .object(file.getFilePath())
                             .build()
             );
         } catch (Exception e) {
             log.error("MinIO 파일 삭제 실패: {}", e.getMessage());
         }
 
-        media.delete();
+        file.delete();
     }
 
-    public InputStream downloadMedia(Long id) {
-        Media media = mediaRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
+    public InputStream downloadFile(Long id) {
+        AtchFile file = atchFileRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(minioConfig.getBucketName())
-                            .object(media.getFilePath())
+                            .object(file.getFilePath())
                             .build()
             );
         } catch (Exception e) {
             log.error("MinIO 파일 다운로드 실패: {}", e.getMessage());
-            throw new BusinessException(ErrorCode.MEDIA_NOT_FOUND);
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
     }
 
     public String getPresignedUrl(Long id) {
-        Media media = mediaRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MEDIA_NOT_FOUND));
+        AtchFile file = atchFileRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .bucket(minioConfig.getBucketName())
-                            .object(media.getFilePath())
+                            .object(file.getFilePath())
                             .method(Method.GET)
                             .expiry(1, TimeUnit.HOURS)
                             .build()
             );
         } catch (Exception e) {
             log.error("Presigned URL 생성 실패: {}", e.getMessage());
-            throw new BusinessException(ErrorCode.MEDIA_NOT_FOUND);
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
     }
 
@@ -246,19 +246,19 @@ public class MediaService {
         return "common/" + datePath + "/" + storedName;
     }
 
-    private MediaType determineMediaType(String extension) {
+    private AtchFileType determineFileType(String extension) {
         if (IMAGE_EXTENSIONS.contains(extension)) {
-            return MediaType.IMAGE;
+            return AtchFileType.IMAGE;
         } else if (VIDEO_EXTENSIONS.contains(extension)) {
-            return MediaType.VIDEO;
+            return AtchFileType.VIDEO;
         } else if (AUDIO_EXTENSIONS.contains(extension)) {
-            return MediaType.AUDIO;
+            return AtchFileType.AUDIO;
         } else if (DOCUMENT_EXTENSIONS.contains(extension)) {
-            return MediaType.DOCUMENT;
+            return AtchFileType.DOCUMENT;
         } else if (ARCHIVE_EXTENSIONS.contains(extension)) {
-            return MediaType.ARCHIVE;
+            return AtchFileType.ARCHIVE;
         } else {
-            return MediaType.OTHER;
+            return AtchFileType.OTHER;
         }
     }
 
