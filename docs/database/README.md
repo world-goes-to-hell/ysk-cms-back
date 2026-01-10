@@ -10,6 +10,7 @@ YSK CMS는 MariaDB 11.2를 사용하는 멀티 사이트 CMS 시스템입니다.
 |------|------|
 | `01_schema.sql` | 테이블 생성 DDL |
 | `02_initial_data.sql` | 초기 데이터 (역할, 권한, 관리자 계정) |
+| `03_sample_data.sql` | 샘플 데이터 (테스트용, 선택사항) |
 
 ## 설치 순서
 
@@ -19,6 +20,9 @@ mysql -u root -p ysk_cms < 01_schema.sql
 
 # 2. 초기 데이터 입력
 mysql -u root -p ysk_cms < 02_initial_data.sql
+
+# 3. (선택) 샘플 데이터 입력
+mysql -u root -p ysk_cms < 03_sample_data.sql
 ```
 
 ## ERD (Entity Relationship Diagram)
