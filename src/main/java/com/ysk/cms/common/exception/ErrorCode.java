@@ -36,6 +36,10 @@ public enum ErrorCode {
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "게시판을 찾을 수 없습니다."),
     DUPLICATE_BOARD_CODE(HttpStatus.CONFLICT, "B002", "이미 존재하는 게시판 코드입니다."),
 
+    // BoardType
+    BOARD_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "BT001", "게시판 타입을 찾을 수 없습니다."),
+    DUPLICATE_BOARD_TYPE_CODE(HttpStatus.CONFLICT, "BT002", "이미 존재하는 게시판 타입 코드입니다."),
+
     // Article (게시글)
     ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "AR001", "게시글을 찾을 수 없습니다."),
 

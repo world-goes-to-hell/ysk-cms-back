@@ -138,17 +138,17 @@ public class MenuService {
 
         menu.update(
                 request.getName(),
-                request.getCode(),
-                request.getType(),
-                request.getUrl(),
-                request.getIcon(),
+                request.getCode() != null ? request.getCode() : menu.getCode(),
+                request.getType() != null ? request.getType() : menu.getType(),
+                request.getUrl() != null ? request.getUrl() : menu.getUrl(),
+                request.getIcon() != null ? request.getIcon() : menu.getIcon(),
                 request.getSortOrder() != null ? request.getSortOrder() : menu.getSortOrder(),
                 request.getStatus() != null ? request.getStatus() : menu.getStatus(),
-                request.getTarget(),
-                request.getRoles(),
-                request.getDescription(),
-                request.getComponentPath(),
-                request.getRelatedRoutes()
+                request.getTarget() != null ? request.getTarget() : menu.getTarget(),
+                request.getRoles() != null ? request.getRoles() : menu.getRoles(),
+                request.getDescription() != null ? request.getDescription() : menu.getDescription(),
+                request.getComponentPath() != null ? request.getComponentPath() : menu.getComponentPath(),
+                request.getRelatedRoutes() != null ? request.getRelatedRoutes() : menu.getRelatedRoutes()
         );
 
         return MenuDto.from(menu);

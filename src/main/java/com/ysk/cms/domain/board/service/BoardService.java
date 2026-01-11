@@ -64,7 +64,7 @@ public class BoardService {
                 .code(request.getCode())
                 .name(request.getName())
                 .description(request.getDescription())
-                .type(request.getType())
+                .typeCode(request.getTypeCode())
                 .useComment(request.getUseComment())
                 .useAttachment(request.getUseAttachment())
                 .attachmentLimit(request.getAttachmentLimit())
@@ -83,7 +83,7 @@ public class BoardService {
         board.update(
                 request.getName(),
                 request.getDescription(),
-                request.getType(),
+                request.getTypeCode() != null ? request.getTypeCode() : board.getTypeCode(),
                 request.getUseComment(),
                 request.getUseAttachment(),
                 request.getAttachmentLimit(),

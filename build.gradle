@@ -36,6 +36,10 @@ dependencies {
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // MySQL
+    implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.14.1'
+    implementation 'com.mysql:mysql-connector-j:8.0.33'
+
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -54,4 +58,8 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jar {
+    enabled = false
 }

@@ -2,7 +2,6 @@ package com.ysk.cms.domain.board.dto;
 
 import com.ysk.cms.domain.board.entity.Board;
 import com.ysk.cms.domain.board.entity.BoardStatus;
-import com.ysk.cms.domain.board.entity.BoardType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,7 +16,7 @@ public class BoardDto {
     private String code;
     private String name;
     private String description;
-    private BoardType type;
+    private String typeCode;
     private Boolean useComment;
     private Boolean useAttachment;
     private Integer attachmentLimit;
@@ -33,7 +32,7 @@ public class BoardDto {
                 .code(board.getCode())
                 .name(board.getName())
                 .description(board.getDescription())
-                .type(board.getType())
+                .typeCode(board.getTypeCode())
                 .useComment(board.getUseComment())
                 .useAttachment(board.getUseAttachment())
                 .attachmentLimit(board.getAttachmentLimit())

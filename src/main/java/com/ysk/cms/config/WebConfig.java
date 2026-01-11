@@ -12,7 +12,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                         "http://localhost:5173",  // Vite dev server
-                        "http://localhost:8081"   // Vue CLI dev server
+                        "http://localhost:8081",   // Vue CLI dev server
+                        "https://intricate-reef-484002-s4.web.app"  // 👈 이거 추가!
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")

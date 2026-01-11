@@ -6,14 +6,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "boards", uniqueConstraints = {
+@Table(name = "board_types", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"site_id", "code"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Board extends BaseEntity {
+public class BoardTypeEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", nullable = false)
@@ -28,21 +28,17 @@ public class Board extends BaseEntity {
     @Column(length = 500)
     private String description;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 100)
     @Builder.Default
-    private String typeCode = "NORMAL";
+    private String icon = "mdi-file-document-outline";
 
-    @Column(nullable = false)
+    @Column(length = 20)
     @Builder.Default
-    private Boolean useComment = false;
+    private String color = "#6366f1";
 
-    @Column(nullable = false)
+    @Column(length = 50)
     @Builder.Default
-    private Boolean useAttachment = true;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer attachmentLimit = 5;
+    private String bgColor = "rgba(99, 102, 241, 0.1)";
 
     @Column(nullable = false)
     @Builder.Default
@@ -51,22 +47,20 @@ public class Board extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BoardStatus status = BoardStatus.ACTIVE;
+    private BoardTypeStatus status = BoardTypeStatus.ACTIVE;
 
-    public void update(String name, String description, String typeCode,
-                       Boolean useComment, Boolean useAttachment,
-                       Integer attachmentLimit, Integer sortOrder, BoardStatus status) {
+    public void update(String name, String description, String icon, String color, String bgColor,
+                       Integer sortOrder, BoardTypeStatus status) {
         this.name = name;
         this.description = description;
-        this.typeCode = typeCode;
-        this.useComment = useComment;
-        this.useAttachment = useAttachment;
-        this.attachmentLimit = attachmentLimit;
+        this.icon = icon;
+        this.color = color;
+        this.bgColor = bgColor;
         this.sortOrder = sortOrder;
         this.status = status;
     }
 
     public boolean isActive() {
-        return this.status == BoardStatus.ACTIVE;
+        return this.status == BoardTypeStatus.ACTIVE;
     }
 }
