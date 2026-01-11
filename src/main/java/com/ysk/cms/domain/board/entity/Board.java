@@ -46,6 +46,14 @@ public class Board extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
+    private Boolean useSecret = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean usePinned = false;
+
+    @Column(nullable = false)
+    @Builder.Default
     private Integer sortOrder = 0;
 
     @Enumerated(EnumType.STRING)
@@ -55,13 +63,16 @@ public class Board extends BaseEntity {
 
     public void update(String name, String description, String typeCode,
                        Boolean useComment, Boolean useAttachment,
-                       Integer attachmentLimit, Integer sortOrder, BoardStatus status) {
+                       Integer attachmentLimit, Boolean useSecret, Boolean usePinned,
+                       Integer sortOrder, BoardStatus status) {
         this.name = name;
         this.description = description;
         this.typeCode = typeCode;
         this.useComment = useComment;
         this.useAttachment = useAttachment;
         this.attachmentLimit = attachmentLimit;
+        this.useSecret = useSecret;
+        this.usePinned = usePinned;
         this.sortOrder = sortOrder;
         this.status = status;
     }

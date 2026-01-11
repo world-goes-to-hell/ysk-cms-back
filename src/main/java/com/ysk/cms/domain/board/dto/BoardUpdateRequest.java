@@ -28,6 +28,10 @@ public class BoardUpdateRequest {
 
     private Integer attachmentLimit;
 
+    private Boolean useSecret;
+
+    private Boolean usePinned;
+
     private Integer sortOrder;
 
     private BoardStatus status;

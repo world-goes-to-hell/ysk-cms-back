@@ -114,4 +114,13 @@ public class BoardArticleService {
         article.publish();
         return BoardArticleDto.from(article);
     }
+
+    @Transactional
+    public BoardArticleDto answerArticle(String siteCode, String boardCode, Long articleId, BoardArticleAnswerRequest request) {
+        BoardArticle article = articleRepository.findByIdAndSiteCodeAndBoardCode(articleId, siteCode, boardCode)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ARTICLE_NOT_FOUND));
+
+        article.updateAnswer(request.getAnswer());
+        return BoardArticleDto.from(article);
+    }
 }

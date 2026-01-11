@@ -31,11 +31,9 @@ jwt:
   access-token-expiration: 900000      # 15분 (밀리초)
   refresh-token-expiration: 604800000  # 7일 (밀리초)
 
-minio:
-  endpoint: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin1234
-  bucket-name: ysk-cms
+gcs:
+  project-id: intricate-reef-484002-s4
+  bucket-name: ysk-cms-storage
 
 springdoc:
   api-docs:

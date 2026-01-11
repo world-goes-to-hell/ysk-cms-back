@@ -1,17 +1,19 @@
 package com.ysk.cms.domain.atchfile.service;
 
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
 import com.ysk.cms.common.dto.PageResponse;
 import com.ysk.cms.common.exception.BusinessException;
 import com.ysk.cms.common.exception.ErrorCode;
-import com.ysk.cms.config.MinioConfig;
+import com.ysk.cms.config.GcsConfig;
 import com.ysk.cms.domain.atchfile.dto.*;
 import com.ysk.cms.domain.atchfile.entity.AtchFile;
 import com.ysk.cms.domain.atchfile.entity.AtchFileType;
 import com.ysk.cms.domain.atchfile.repository.AtchFileRepository;
 import com.ysk.cms.domain.site.entity.Site;
 import com.ysk.cms.domain.site.repository.SiteRepository;
-import io.minio.*;
-import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -38,8 +42,8 @@ public class AtchFileService {
 
     private final AtchFileRepository atchFileRepository;
     private final SiteRepository siteRepository;
-    private final MinioClient minioClient;
-    private final MinioConfig minioConfig;
+    private final Storage storage;
+    private final GcsConfig gcsConfig;
 
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg");
     private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "avi", "mov", "mkv");
@@ -114,16 +118,14 @@ public class AtchFileService {
         }
 
         try {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(minioConfig.getBucketName())
-                            .object(filePath)
-                            .stream(file.getInputStream(), file.getSize(), -1)
-                            .contentType(file.getContentType())
-                            .build()
-            );
+            BlobId blobId = BlobId.of(gcsConfig.getBucketName(), filePath);
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                    .setContentType(file.getContentType())
+                    .build();
+            storage.create(blobInfo, file.getBytes());
+            log.info("GCS 파일 업로드 완료: {}", filePath);
         } catch (Exception e) {
-            log.error("MinIO 파일 업로드 실패: {}", e.getMessage());
+            log.error("GCS 파일 업로드 실패: {}", e.getMessage());
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
 
@@ -167,14 +169,15 @@ public class AtchFileService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(minioConfig.getBucketName())
-                            .object(file.getFilePath())
-                            .build()
-            );
+            BlobId blobId = BlobId.of(gcsConfig.getBucketName(), file.getFilePath());
+            boolean deleted = storage.delete(blobId);
+            if (deleted) {
+                log.info("GCS 파일 삭제 완료: {}", file.getFilePath());
+            } else {
+                log.warn("GCS 파일이 존재하지 않음: {}", file.getFilePath());
+            }
         } catch (Exception e) {
-            log.error("MinIO 파일 삭제 실패: {}", e.getMessage());
+            log.error("GCS 파일 삭제 실패: {}", e.getMessage());
         }
 
         file.delete();
@@ -185,14 +188,16 @@ public class AtchFileService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
-            return minioClient.getObject(
-                    GetObjectArgs.builder()
-                            .bucket(minioConfig.getBucketName())
-                            .object(file.getFilePath())
-                            .build()
-            );
+            BlobId blobId = BlobId.of(gcsConfig.getBucketName(), file.getFilePath());
+            Blob blob = storage.get(blobId);
+            if (blob == null) {
+                throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+            }
+            return new ByteArrayInputStream(blob.getContent());
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("MinIO 파일 다운로드 실패: {}", e.getMessage());
+            log.error("GCS 파일 다운로드 실패: {}", e.getMessage());
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
     }
@@ -202,16 +207,12 @@ public class AtchFileService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         try {
-            return minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .bucket(minioConfig.getBucketName())
-                            .object(file.getFilePath())
-                            .method(Method.GET)
-                            .expiry(1, TimeUnit.HOURS)
-                            .build()
-            );
+            BlobId blobId = BlobId.of(gcsConfig.getBucketName(), file.getFilePath());
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+            URL signedUrl = storage.signUrl(blobInfo, 1, TimeUnit.HOURS);
+            return signedUrl.toString();
         } catch (Exception e) {
-            log.error("Presigned URL 생성 실패: {}", e.getMessage());
+            log.error("Signed URL 생성 실패: {}", e.getMessage());
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
     }
@@ -263,6 +264,6 @@ public class AtchFileService {
     }
 
     private String getBaseUrl() {
-        return minioConfig.getEndpoint() + "/" + minioConfig.getBucketName();
+        return "https://storage.googleapis.com/" + gcsConfig.getBucketName();
     }
 }

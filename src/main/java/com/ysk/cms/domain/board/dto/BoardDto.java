@@ -20,6 +20,8 @@ public class BoardDto {
     private Boolean useComment;
     private Boolean useAttachment;
     private Integer attachmentLimit;
+    private Boolean useSecret;
+    private Boolean usePinned;
     private Integer sortOrder;
     private BoardStatus status;
     private LocalDateTime createdAt;
@@ -36,6 +38,8 @@ public class BoardDto {
                 .useComment(board.getUseComment())
                 .useAttachment(board.getUseAttachment())
                 .attachmentLimit(board.getAttachmentLimit())
+                .useSecret(board.getUseSecret())
+                .usePinned(board.getUsePinned())
                 .sortOrder(board.getSortOrder())
                 .status(board.getStatus())
                 .createdAt(board.getCreatedAt())

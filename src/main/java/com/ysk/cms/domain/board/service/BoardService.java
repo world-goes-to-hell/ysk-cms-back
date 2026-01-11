@@ -68,6 +68,8 @@ public class BoardService {
                 .useComment(request.getUseComment())
                 .useAttachment(request.getUseAttachment())
                 .attachmentLimit(request.getAttachmentLimit())
+                .useSecret(request.getUseSecret())
+                .usePinned(request.getUsePinned())
                 .sortOrder(request.getSortOrder())
                 .build();
 
@@ -87,6 +89,8 @@ public class BoardService {
                 request.getUseComment(),
                 request.getUseAttachment(),
                 request.getAttachmentLimit(),
+                request.getUseSecret(),
+                request.getUsePinned(),
                 request.getSortOrder(),
                 request.getStatus()
         );

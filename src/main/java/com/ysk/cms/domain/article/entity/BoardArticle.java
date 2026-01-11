@@ -74,6 +74,10 @@ public class BoardArticle extends BaseEntity {
         this.publishedAt = LocalDateTime.now();
     }
 
+    public void updateAnswer(String answer) {
+        this.answer = answer;
+    }
+
     public void incrementViewCount() {
         this.viewCount++;
     }

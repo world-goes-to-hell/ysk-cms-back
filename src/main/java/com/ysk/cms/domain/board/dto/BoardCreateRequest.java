@@ -32,5 +32,9 @@ public class BoardCreateRequest {
 
     private Integer attachmentLimit = 5;
 
+    private Boolean useSecret = false;
+
+    private Boolean usePinned = false;
+
     private Integer sortOrder = 0;
 }

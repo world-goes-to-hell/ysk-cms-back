@@ -29,6 +29,15 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String name;
 
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 100)
+    private String department;
+
+    @Column(length = 100)
+    private String position;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
@@ -61,6 +70,14 @@ public class User extends BaseEntity {
     public void updateProfile(String name, String email) {
         this.name = name;
         this.email = email;
+    }
+
+    public void updateProfile(String name, String email, String phone, String department, String position) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.department = department;
+        this.position = position;
     }
 
     public void updateStatus(UserStatus status) {
@@ -111,5 +128,12 @@ public class User extends BaseEntity {
     public boolean isSuperAdmin() {
         return this.roles.stream()
                 .anyMatch(role -> "SUPER_ADMIN".equals(role.getName()));
+    }
+
+    public String getPrimaryRoleName() {
+        return this.roles.stream()
+                .map(Role::getName)
+                .findFirst()
+                .orElse("USER");
     }
 }

@@ -30,6 +30,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.username = :username AND u.deleted = false")
     Optional<User> findByUsernameWithRoles(@Param("username") String username);
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id AND u.deleted = false")
+    Optional<User> findByIdWithRoles(@Param("id") Long id);
+
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false")
     long countActiveUsers();
 
@@ -38,4 +41,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.deleted = false AND u.createdAt >= :startDate AND u.createdAt < :endDate")
     long countUsersCreatedBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN u.roles r WHERE u.deleted = false " +
+            "AND (:roleName IS NULL OR r.name = :roleName) " +
+            "AND (:status IS NULL OR u.status = :status) " +
+            "AND (:keyword IS NULL OR u.name LIKE %:keyword% OR u.email LIKE %:keyword% OR u.username LIKE %:keyword%)")
+    Page<User> findAllWithFilters(
+            @Param("roleName") String roleName,
+            @Param("status") UserStatus status,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 }

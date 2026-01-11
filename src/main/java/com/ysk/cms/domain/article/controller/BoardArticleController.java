@@ -2,6 +2,7 @@ package com.ysk.cms.domain.article.controller;
 
 import com.ysk.cms.common.dto.ApiResponse;
 import com.ysk.cms.common.dto.PageResponse;
+import com.ysk.cms.domain.article.dto.BoardArticleAnswerRequest;
 import com.ysk.cms.domain.article.dto.BoardArticleCreateRequest;
 import com.ysk.cms.domain.article.dto.BoardArticleDto;
 import com.ysk.cms.domain.article.dto.BoardArticleListDto;
@@ -118,5 +119,16 @@ public class BoardArticleController {
             @PathVariable String boardCode,
             @PathVariable Long articleId) {
         return ApiResponse.success(articleService.publishArticle(siteCode, boardCode, articleId));
+    }
+
+    @Operation(summary = "게시글 답변 등록/수정 (Q&A용)")
+    @PutMapping("/{articleId}/answer")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
+    public ApiResponse<BoardArticleDto> answerArticle(
+            @PathVariable String siteCode,
+            @PathVariable String boardCode,
+            @PathVariable Long articleId,
+            @RequestBody BoardArticleAnswerRequest request) {
+        return ApiResponse.success(articleService.answerArticle(siteCode, boardCode, articleId, request));
     }
 }
