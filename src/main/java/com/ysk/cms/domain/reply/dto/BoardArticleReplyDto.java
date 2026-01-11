@@ -54,7 +54,7 @@ public class BoardArticleReplyDto {
                 .author(isDeleted ? null : reply.getAuthor())
                 .isSecret(reply.getIsSecret())
                 .deleted(isDeleted)
-                .depth(calculateDepth(reply))
+                .depth(reply.getDepth())
                 .createdAt(reply.getCreatedAt())
                 .updatedAt(reply.getUpdatedAt())
                 .createdBy(isDeleted ? null : reply.getCreatedBy())
@@ -76,28 +76,12 @@ public class BoardArticleReplyDto {
                 .author(isDeleted ? null : reply.getAuthor())
                 .isSecret(reply.getIsSecret())
                 .deleted(isDeleted)
-                .depth(calculateDepth(reply))
+                .depth(reply.getDepth())
                 .createdAt(reply.getCreatedAt())
                 .updatedAt(reply.getUpdatedAt())
                 .createdBy(isDeleted ? null : reply.getCreatedBy())
                 .children(null)
                 .build();
-    }
-
-    /**
-     * 댓글의 깊이(depth) 계산
-     * - 최대 깊이 10으로 제한 (무한 루프 방지)
-     */
-    private static int calculateDepth(BoardArticleReply reply) {
-        int depth = 0;
-        BoardArticleReply current = reply;
-        final int MAX_DEPTH = 10;
-
-        while (current.getParent() != null && depth < MAX_DEPTH) {
-            depth++;
-            current = current.getParent();
-        }
-        return depth;
     }
 
     /**

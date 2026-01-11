@@ -30,12 +30,10 @@ public interface BoardArticleReplyRepository extends JpaRepository<BoardArticleR
     Page<BoardArticleReply> findByArticleIdAndParentIsNull(@Param("articleId") Long articleId, Pageable pageable);
 
     // 게시글의 모든 댓글 페이징 조회 (플랫 구조 - 부모+자식 모두, 삭제된 댓글 포함)
+    // 정렬: path 기준 정렬 (대댓글 체인 유지)
     @Query(value = "SELECT r FROM BoardArticleReply r " +
-           "LEFT JOIN FETCH r.parent p " +
-           "LEFT JOIN FETCH p.parent pp " +
-           "LEFT JOIN FETCH pp.parent " +
            "WHERE r.article.id = :articleId " +
-           "ORDER BY COALESCE(r.parent.id, r.id), r.parent.id NULLS FIRST, r.createdAt ASC",
+           "ORDER BY r.path ASC",
            countQuery = "SELECT COUNT(r) FROM BoardArticleReply r WHERE r.article.id = :articleId")
     Page<BoardArticleReply> findAllByArticleIdFlat(@Param("articleId") Long articleId, Pageable pageable);
 

@@ -43,10 +43,41 @@ public class BoardArticleReply extends BaseEntity {
     @Builder.Default
     private Boolean isSecret = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer depth = 0;
+
+    // 정렬용 경로 (예: "00001.00002.00003")
+    @Column(length = 1000)
+    private String path;
+
     public void update(String content, Boolean isSecret) {
         this.content = content;
         if (isSecret != null) {
             this.isSecret = isSecret;
+        }
+    }
+
+    /**
+     * 부모 댓글 기반으로 depth 설정
+     */
+    public void calculateAndSetDepth() {
+        if (this.parent == null) {
+            this.depth = 0;
+        } else {
+            this.depth = this.parent.getDepth() + 1;
+        }
+    }
+
+    /**
+     * ID 기반으로 path 설정 (저장 후 호출)
+     */
+    public void calculateAndSetPath() {
+        String idStr = String.format("%010d", this.getId());
+        if (this.parent == null) {
+            this.path = idStr;
+        } else {
+            this.path = this.parent.getPath() + "." + idStr;
         }
     }
 

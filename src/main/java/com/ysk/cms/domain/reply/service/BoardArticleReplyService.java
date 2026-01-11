@@ -108,7 +108,16 @@ public class BoardArticleReplyService {
                 .isSecret(request.getIsSecret())
                 .build();
 
+        // depth 계산 및 설정
+        reply.calculateAndSetDepth();
+
+        // 먼저 저장하여 ID 생성
         BoardArticleReply savedReply = replyRepository.save(reply);
+
+        // path 계산 및 설정 (ID가 필요하므로 저장 후 수행)
+        savedReply.calculateAndSetPath();
+        savedReply = replyRepository.save(savedReply);
+
         return BoardArticleReplyDto.from(savedReply);
     }
 
