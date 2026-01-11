@@ -50,7 +50,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isActive();
+        // PENDING, ACTIVE 모두 로그인 시도 허용 (AuthService에서 상태별 처리)
+        return true;
     }
 
     public Long getUserId() {

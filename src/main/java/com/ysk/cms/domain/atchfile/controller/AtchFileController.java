@@ -155,4 +155,16 @@ public class AtchFileController {
         String url = atchFileService.getPresignedUrl(id);
         return ApiResponse.success(Map.of("url", url));
     }
+
+    @Operation(summary = "첨부파일 공개 조회 (이미지 미리보기용)")
+    @GetMapping("/public/files/{id}")
+    public ResponseEntity<Resource> viewFile(@PathVariable Long id) {
+        AtchFileDto file = atchFileService.getFile(id);
+        InputStream inputStream = atchFileService.downloadFile(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.getMimeType()))
+                .cacheControl(org.springframework.http.CacheControl.maxAge(7, java.util.concurrent.TimeUnit.DAYS))
+                .body(new InputStreamResource(inputStream));
+    }
 }

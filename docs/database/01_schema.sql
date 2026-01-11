@@ -1,20 +1,22 @@
 -- =============================================
--- YSK CMS Database Schema
+-- YSK CMS Database Schema (통합)
 -- Database: MariaDB 11.2
--- Created: 2024-01-10
+-- Updated: 2025-01-11
 -- =============================================
 
 -- =============================================
 -- 1. 사용자 관련 테이블
 -- =============================================
 
--- 1.1 사용자 테이블
 CREATE TABLE users (
     id BIGINT NOT NULL AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL,
     name VARCHAR(50),
+    phone VARCHAR(20),
+    department VARCHAR(100),
+    position VARCHAR(100),
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     last_login_at DATETIME(6),
     created_at DATETIME(6) NOT NULL,
@@ -24,7 +26,6 @@ CREATE TABLE users (
     UNIQUE KEY uk_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1.2 역할 테이블
 CREATE TABLE roles (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
@@ -35,7 +36,6 @@ CREATE TABLE roles (
     UNIQUE KEY uk_roles_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1.3 권한 테이블
 CREATE TABLE permissions (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -48,7 +48,6 @@ CREATE TABLE permissions (
     UNIQUE KEY uk_permissions_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1.4 사용자-역할 연결 테이블
 CREATE TABLE user_roles (
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
@@ -57,7 +56,6 @@ CREATE TABLE user_roles (
     CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 1.5 역할-권한 연결 테이블
 CREATE TABLE role_permissions (
     role_id BIGINT NOT NULL,
     permission_id BIGINT NOT NULL,
@@ -70,7 +68,6 @@ CREATE TABLE role_permissions (
 -- 2. 사이트 관련 테이블
 -- =============================================
 
--- 2.1 사이트 테이블
 CREATE TABLE sites (
     id BIGINT NOT NULL AUTO_INCREMENT,
     code VARCHAR(50) NOT NULL,
@@ -85,7 +82,6 @@ CREATE TABLE sites (
     UNIQUE KEY uk_sites_code (code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2.2 사용자-사이트 연결 테이블
 CREATE TABLE user_sites (
     user_id BIGINT NOT NULL,
     site_id BIGINT NOT NULL,
@@ -98,17 +94,18 @@ CREATE TABLE user_sites (
 -- 3. 게시판/게시글 테이블
 -- =============================================
 
--- 3.1 게시판 테이블
 CREATE TABLE boards (
     id BIGINT NOT NULL AUTO_INCREMENT,
     site_id BIGINT NOT NULL,
     code VARCHAR(50) NOT NULL,
     name VARCHAR(100) NOT NULL,
     description VARCHAR(500),
-    type VARCHAR(20) NOT NULL DEFAULT 'NORMAL',
+    type_code VARCHAR(50) NOT NULL DEFAULT 'NORMAL',
     use_comment TINYINT(1) NOT NULL DEFAULT 0,
     use_attachment TINYINT(1) NOT NULL DEFAULT 1,
     attachment_limit INT NOT NULL DEFAULT 5,
+    use_secret TINYINT(1) NOT NULL DEFAULT 0,
+    use_pinned TINYINT(1) NOT NULL DEFAULT 0,
     sort_order INT NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_at DATETIME(6) NOT NULL,
@@ -118,7 +115,6 @@ CREATE TABLE boards (
     CONSTRAINT fk_boards_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3.2 게시글 테이블 (board_articles)
 CREATE TABLE board_articles (
     id BIGINT NOT NULL AUTO_INCREMENT,
     board_id BIGINT NOT NULL,
@@ -126,6 +122,7 @@ CREATE TABLE board_articles (
     content LONGTEXT,
     author VARCHAR(50),
     view_count INT NOT NULL DEFAULT 0,
+    reply_count INT NOT NULL DEFAULT 0,
     is_pinned TINYINT(1) NOT NULL DEFAULT 0,
     is_secret TINYINT(1) NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
@@ -139,6 +136,26 @@ CREATE TABLE board_articles (
     PRIMARY KEY (id),
     INDEX idx_article_board_created (board_id, created_at DESC),
     CONSTRAINT fk_board_articles_board FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE board_article_replies (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    article_id BIGINT NOT NULL,
+    parent_id BIGINT,
+    content TEXT NOT NULL,
+    author VARCHAR(50),
+    is_secret TINYINT(1) NOT NULL DEFAULT 0,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    PRIMARY KEY (id),
+    INDEX idx_reply_article (article_id),
+    INDEX idx_reply_parent (parent_id),
+    INDEX idx_reply_created (article_id, created_at DESC),
+    CONSTRAINT fk_replies_article FOREIGN KEY (article_id) REFERENCES board_articles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_replies_parent FOREIGN KEY (parent_id) REFERENCES board_article_replies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -167,12 +184,13 @@ CREATE TABLE pages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 5. 첨부파일 테이블 (atch_files)
+-- 5. 첨부파일 테이블
 -- =============================================
 
 CREATE TABLE atch_files (
     id BIGINT NOT NULL AUTO_INCREMENT,
     site_id BIGINT,
+    article_id BIGINT,
     original_name VARCHAR(255) NOT NULL,
     stored_name VARCHAR(500) NOT NULL,
     file_path VARCHAR(1000) NOT NULL,
@@ -191,7 +209,9 @@ CREATE TABLE atch_files (
     PRIMARY KEY (id),
     INDEX idx_atch_file_site (site_id),
     INDEX idx_atch_file_type (type),
-    CONSTRAINT fk_atch_files_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
+    INDEX idx_atch_file_article (article_id),
+    CONSTRAINT fk_atch_files_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL,
+    CONSTRAINT fk_atch_file_article FOREIGN KEY (article_id) REFERENCES board_articles(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -230,6 +250,8 @@ CREATE TABLE admin_menus (
     type VARCHAR(20) NOT NULL DEFAULT 'INTERNAL',
     url VARCHAR(500),
     icon VARCHAR(50),
+    component_path VARCHAR(255),
+    related_routes TEXT,
     sort_order INT NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     target VARCHAR(20) DEFAULT '_self',
@@ -247,4 +269,85 @@ CREATE TABLE admin_menus (
     INDEX idx_admin_menu_sort (site_id, parent_id, sort_order),
     CONSTRAINT fk_admin_menus_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
     CONSTRAINT fk_admin_menus_parent FOREIGN KEY (parent_id) REFERENCES admin_menus(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 8. 게시판 타입 테이블
+-- =============================================
+
+CREATE TABLE board_types (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    site_id BIGINT NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500),
+    list_type VARCHAR(20) NOT NULL DEFAULT 'LIST',
+    use_category TINYINT(1) NOT NULL DEFAULT 0,
+    use_tag TINYINT(1) NOT NULL DEFAULT 0,
+    use_thumbnail TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_board_types_site_code (site_id, code),
+    CONSTRAINT fk_board_types_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 9. 채팅 테이블
+-- =============================================
+
+CREATE TABLE chat_rooms (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    type VARCHAR(20) NOT NULL DEFAULT 'PRIVATE',
+    last_message TEXT,
+    last_message_at DATETIME(6),
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE chat_room_users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    chat_room_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    joined_at DATETIME(6),
+    last_read_at DATETIME(6),
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50),
+    CONSTRAINT fk_chat_room_user_room FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id),
+    CONSTRAINT fk_chat_room_user_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT uk_chat_room_user UNIQUE (chat_room_id, user_id),
+    INDEX idx_chat_room_user_room (chat_room_id),
+    INDEX idx_chat_room_user_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE chat_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    chat_room_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
+    content TEXT NOT NULL,
+    file_name VARCHAR(255),
+    file_url VARCHAR(500),
+    file_size BIGINT,
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(50),
+    updated_by VARCHAR(50),
+    CONSTRAINT fk_chat_message_room FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id),
+    CONSTRAINT fk_chat_message_sender FOREIGN KEY (sender_id) REFERENCES users(id),
+    INDEX idx_chat_message_room (chat_room_id),
+    INDEX idx_chat_message_created (chat_room_id, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

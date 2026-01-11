@@ -35,7 +35,7 @@ public class AtchFileDto {
                 .originalName(file.getOriginalName())
                 .storedName(file.getStoredName())
                 .filePath(file.getFilePath())
-                .url(baseUrl + "/" + file.getStoredName())
+                .url("/api/public/files/" + file.getId())
                 .mimeType(file.getMimeType())
                 .fileSize(file.getFileSize())
                 .type(file.getType())

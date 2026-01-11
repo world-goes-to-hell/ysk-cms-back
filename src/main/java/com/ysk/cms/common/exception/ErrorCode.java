@@ -28,6 +28,9 @@ public enum ErrorCode {
     USER_LOCKED(HttpStatus.FORBIDDEN, "U004", "잠긴 계정입니다."),
     ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "U005", "역할을 찾을 수 없습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "U006", "현재 비밀번호가 일치하지 않습니다."),
+    USER_PENDING(HttpStatus.FORBIDDEN, "U007", "승인 대기 중인 계정입니다. 관리자 승인 후 로그인이 가능합니다."),
+    USER_INACTIVE(HttpStatus.FORBIDDEN, "U008", "비활성화된 계정입니다."),
+    USER_SUSPENDED(HttpStatus.FORBIDDEN, "U009", "정지된 계정입니다."),
 
     // Site
     SITE_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "사이트를 찾을 수 없습니다."),

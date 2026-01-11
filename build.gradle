@@ -36,6 +36,9 @@ dependencies {
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     // MySQL
     implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.14.1'
     implementation 'com.mysql:mysql-connector-j:8.0.33'

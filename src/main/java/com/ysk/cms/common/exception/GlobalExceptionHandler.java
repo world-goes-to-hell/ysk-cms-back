@@ -11,6 +11,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -79,6 +80,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ErrorCode.ACCESS_DENIED.getStatus())
                 .body(ApiResponse.error(ErrorCode.ACCESS_DENIED.getCode(), ErrorCode.ACCESS_DENIED.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("File size exceeded: {}", e.getMessage());
+        return ResponseEntity
+                .status(ErrorCode.FILE_SIZE_EXCEEDED.getStatus())
+                .body(ApiResponse.error(ErrorCode.FILE_SIZE_EXCEEDED.getCode(), "파일 크기가 최대 허용 용량(50MB)을 초과했습니다."));
     }
 
     @ExceptionHandler(Exception.class)

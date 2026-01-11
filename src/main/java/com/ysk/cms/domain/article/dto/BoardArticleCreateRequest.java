@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class BoardArticleCreateRequest {
@@ -24,4 +26,6 @@ public class BoardArticleCreateRequest {
     private Boolean isSecret = false;
 
     private ArticleStatus status = ArticleStatus.DRAFT;
+
+    private List<Long> attachmentIds;
 }

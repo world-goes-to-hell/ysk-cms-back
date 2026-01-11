@@ -3,6 +3,8 @@ package com.ysk.cms.domain.article.service;
 import com.ysk.cms.common.dto.PageResponse;
 import com.ysk.cms.common.exception.BusinessException;
 import com.ysk.cms.common.exception.ErrorCode;
+import com.ysk.cms.domain.atchfile.entity.AtchFile;
+import com.ysk.cms.domain.atchfile.repository.AtchFileRepository;
 import com.ysk.cms.domain.board.entity.Board;
 import com.ysk.cms.domain.board.repository.BoardRepository;
 import com.ysk.cms.domain.article.dto.*;
@@ -15,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -22,6 +26,7 @@ public class BoardArticleService {
 
     private final BoardArticleRepository articleRepository;
     private final BoardRepository boardRepository;
+    private final AtchFileRepository atchFileRepository;
 
     public PageResponse<BoardArticleListDto> getArticles(String siteCode, String boardCode, Pageable pageable) {
         Page<BoardArticle> articlePage = articleRepository.findBySiteCodeAndBoardCode(siteCode, boardCode, pageable);
@@ -46,7 +51,8 @@ public class BoardArticleService {
     public BoardArticleDto getArticle(String siteCode, String boardCode, Long articleId) {
         BoardArticle article = articleRepository.findByIdAndSiteCodeAndBoardCode(articleId, siteCode, boardCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ARTICLE_NOT_FOUND));
-        return BoardArticleDto.from(article);
+        List<AtchFile> attachments = atchFileRepository.findByArticleId(articleId);
+        return BoardArticleDto.from(article, attachments);
     }
 
     @Transactional
@@ -54,7 +60,8 @@ public class BoardArticleService {
         BoardArticle article = articleRepository.findByIdAndSiteCodeAndBoardCode(articleId, siteCode, boardCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ARTICLE_NOT_FOUND));
         article.incrementViewCount();
-        return BoardArticleDto.from(article);
+        List<AtchFile> attachments = atchFileRepository.findByArticleId(articleId);
+        return BoardArticleDto.from(article, attachments);
     }
 
     @Transactional
@@ -77,7 +84,14 @@ public class BoardArticleService {
         }
 
         BoardArticle savedArticle = articleRepository.save(article);
-        return BoardArticleDto.from(savedArticle);
+
+        // 첨부파일 연결
+        if (request.getAttachmentIds() != null && !request.getAttachmentIds().isEmpty()) {
+            linkAttachments(savedArticle, request.getAttachmentIds());
+        }
+
+        List<AtchFile> attachments = atchFileRepository.findByArticleId(savedArticle.getId());
+        return BoardArticleDto.from(savedArticle, attachments);
     }
 
     @Transactional
@@ -95,7 +109,28 @@ public class BoardArticleService {
                 request.getAnswer()
         );
 
-        return BoardArticleDto.from(article);
+        // 첨부파일 연결 업데이트
+        if (request.getAttachmentIds() != null) {
+            // 기존 첨부파일 연결 해제
+            List<AtchFile> existingFiles = atchFileRepository.findByArticleId(articleId);
+            for (AtchFile file : existingFiles) {
+                file.setArticle(null);
+            }
+            // 새 첨부파일 연결
+            if (!request.getAttachmentIds().isEmpty()) {
+                linkAttachments(article, request.getAttachmentIds());
+            }
+        }
+
+        List<AtchFile> attachments = atchFileRepository.findByArticleId(articleId);
+        return BoardArticleDto.from(article, attachments);
+    }
+
+    private void linkAttachments(BoardArticle article, List<Long> attachmentIds) {
+        List<AtchFile> files = atchFileRepository.findAllById(attachmentIds);
+        for (AtchFile file : files) {
+            file.setArticle(article);
+        }
     }
 
     @Transactional

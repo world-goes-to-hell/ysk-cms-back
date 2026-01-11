@@ -1,6 +1,7 @@
 package com.ysk.cms.domain.atchfile.entity;
 
 import com.ysk.cms.common.entity.BaseEntity;
+import com.ysk.cms.domain.article.entity.BoardArticle;
 import com.ysk.cms.domain.site.entity.Site;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,6 +20,10 @@ public class AtchFile extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
     private Site site;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "article_id")
+    private BoardArticle article;
 
     @Column(nullable = false, length = 255)
     private String originalName;
@@ -52,6 +57,10 @@ public class AtchFile extends BaseEntity {
     public void update(String description, String altText) {
         this.description = description;
         this.altText = altText;
+    }
+
+    public void setArticle(BoardArticle article) {
+        this.article = article;
     }
 
     public String getExtension() {

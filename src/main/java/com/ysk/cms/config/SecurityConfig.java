@@ -38,14 +38,17 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_URLS = {
             "/api/auth/login",
+            "/api/auth/register",
             "/api/auth/refresh",
+            "/api/auth/roles",
             "/api/public/**",
             "/api/dev/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/webjars/**"
+            "/webjars/**",
+            "/ws/**"  // WebSocket 엔드포인트
     };
 
     @Bean
@@ -114,6 +117,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/ws/**", configuration);  // WebSocket CORS
         return source;
     }
 }

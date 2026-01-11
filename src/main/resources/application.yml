@@ -2,6 +2,11 @@ spring:
   application:
     name: ysk-cms
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
   datasource:
     #url: jdbc:mariadb://localhost:3306/ysk_cms?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     url: jdbc:mysql:///ysk_cms?cloudSqlInstance=intricate-reef-484002-s4:asia-northeast3:ysk-cms-db&socketFactory=com.google.cloud.sql.mysql.SocketFactory

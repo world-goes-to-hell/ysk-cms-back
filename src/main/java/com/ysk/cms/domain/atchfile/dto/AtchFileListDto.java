@@ -24,7 +24,7 @@ public class AtchFileListDto {
         return AtchFileListDto.builder()
                 .id(file.getId())
                 .originalName(file.getOriginalName())
-                .url(baseUrl + "/" + file.getStoredName())
+                .url("/api/public/files/" + file.getId())
                 .mimeType(file.getMimeType())
                 .fileSize(file.getFileSize())
                 .type(file.getType())

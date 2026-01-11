@@ -8,9 +8,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AtchFileRepository extends JpaRepository<AtchFile, Long> {
+
+    @Query("SELECT f FROM AtchFile f WHERE f.article.id = :articleId AND f.deleted = false")
+    List<AtchFile> findByArticleId(@Param("articleId") Long articleId);
 
     @Query("SELECT f FROM AtchFile f WHERE f.deleted = false")
     Page<AtchFile> findAllActive(Pageable pageable);
