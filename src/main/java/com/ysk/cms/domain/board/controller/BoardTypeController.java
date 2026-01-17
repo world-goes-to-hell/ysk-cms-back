@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +28,6 @@ public class BoardTypeController {
 
     @Operation(summary = "게시판 타입 목록 조회 (페이징)")
     @GetMapping("/paged")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageResponse<BoardTypeDto>> getBoardTypesPaged(
             @PathVariable String siteCode,
             @PageableDefault(size = 20, sort = "sortOrder", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -38,21 +36,18 @@ public class BoardTypeController {
 
     @Operation(summary = "게시판 타입 전체 목록 조회")
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<BoardTypeDto>> getBoardTypes(@PathVariable String siteCode) {
         return ApiResponse.success(boardTypeService.getBoardTypesBySite(siteCode));
     }
 
     @Operation(summary = "활성 게시판 타입 목록 조회")
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<BoardTypeDto>> getActiveBoardTypes(@PathVariable String siteCode) {
         return ApiResponse.success(boardTypeService.getActiveBoardTypes(siteCode));
     }
 
     @Operation(summary = "게시판 타입 상세 조회")
     @GetMapping("/{typeCode}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<BoardTypeDto> getBoardType(
             @PathVariable String siteCode,
             @PathVariable String typeCode) {
@@ -62,7 +57,6 @@ public class BoardTypeController {
     @Operation(summary = "게시판 타입 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<BoardTypeDto> createBoardType(
             @PathVariable String siteCode,
             @Valid @RequestBody BoardTypeCreateRequest request) {
@@ -71,7 +65,6 @@ public class BoardTypeController {
 
     @Operation(summary = "게시판 타입 수정")
     @PutMapping("/{typeCode}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<BoardTypeDto> updateBoardType(
             @PathVariable String siteCode,
             @PathVariable String typeCode,
@@ -82,7 +75,6 @@ public class BoardTypeController {
     @Operation(summary = "게시판 타입 삭제")
     @DeleteMapping("/{typeCode}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<Void> deleteBoardType(
             @PathVariable String siteCode,
             @PathVariable String typeCode) {

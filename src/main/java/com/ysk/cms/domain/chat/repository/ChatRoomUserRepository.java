@@ -21,6 +21,15 @@ public interface ChatRoomUserRepository extends JpaRepository<ChatRoomUser, Long
     List<ChatRoomUser> findActiveParticipantsByRoomId(@Param("roomId") Long roomId);
 
     /**
+     * 채팅방의 모든 참여자 조회 (활성 + 비활성)
+     * 1:1 채팅에서 나간 사용자 정보도 표시하기 위함
+     */
+    @Query("SELECT cru FROM ChatRoomUser cru " +
+           "JOIN FETCH cru.user " +
+           "WHERE cru.chatRoom.id = :roomId")
+    List<ChatRoomUser> findAllParticipantsByRoomId(@Param("roomId") Long roomId);
+
+    /**
      * 특정 사용자의 채팅방 참여 정보 조회
      */
     @Query("SELECT cru FROM ChatRoomUser cru " +

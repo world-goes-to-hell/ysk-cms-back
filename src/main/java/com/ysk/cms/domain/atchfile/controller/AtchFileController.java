@@ -17,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +36,6 @@ public class AtchFileController {
 
     @Operation(summary = "전체 첨부파일 목록 조회")
     @GetMapping("/atch-files")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ApiResponse<PageResponse<AtchFileListDto>> getAllFiles(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.success(atchFileService.getFileList(pageable));
@@ -45,7 +43,6 @@ public class AtchFileController {
 
     @Operation(summary = "사이트별 첨부파일 목록 조회")
     @GetMapping("/sites/{siteCode}/atch-files")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageResponse<AtchFileListDto>> getFilesBySite(
             @PathVariable String siteCode,
             @RequestParam(required = false) com.ysk.cms.domain.atchfile.entity.AtchFileType fileType,
@@ -58,7 +55,6 @@ public class AtchFileController {
 
     @Operation(summary = "첨부파일 검색")
     @GetMapping("/sites/{siteCode}/atch-files/search")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageResponse<AtchFileListDto>> searchFiles(
             @PathVariable String siteCode,
             @RequestParam String keyword,
@@ -68,14 +64,12 @@ public class AtchFileController {
 
     @Operation(summary = "첨부파일 상세 조회")
     @GetMapping("/atch-files/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<AtchFileDto> getFile(@PathVariable Long id) {
         return ApiResponse.success(atchFileService.getFile(id));
     }
 
     @Operation(summary = "사이트별 첨부파일 상세 조회")
     @GetMapping("/sites/{siteCode}/atch-files/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<AtchFileDto> getFileBySite(
             @PathVariable String siteCode,
             @PathVariable Long id) {
@@ -85,7 +79,6 @@ public class AtchFileController {
     @Operation(summary = "첨부파일 업로드 (사이트 지정)")
     @PostMapping(value = "/sites/{siteCode}/atch-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<AtchFileDto> uploadFile(
             @PathVariable String siteCode,
             @RequestParam("file") MultipartFile file,
@@ -96,7 +89,6 @@ public class AtchFileController {
     @Operation(summary = "첨부파일 업로드 (공용)")
     @PostMapping(value = "/atch-files/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ApiResponse<AtchFileDto> uploadCommonFile(
             @RequestParam("file") MultipartFile file,
             @Valid AtchFileUploadRequest request) {
@@ -106,7 +98,6 @@ public class AtchFileController {
     @Operation(summary = "다중 첨부파일 업로드")
     @PostMapping(value = "/sites/{siteCode}/atch-files/upload-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<List<AtchFileDto>> uploadMultipleFiles(
             @PathVariable String siteCode,
             @RequestParam("files") List<MultipartFile> files,
@@ -116,7 +107,6 @@ public class AtchFileController {
 
     @Operation(summary = "첨부파일 정보 수정")
     @PutMapping("/atch-files/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<AtchFileDto> updateFile(
             @PathVariable Long id,
             @Valid @RequestBody AtchFileUpdateRequest request) {
@@ -126,7 +116,6 @@ public class AtchFileController {
     @Operation(summary = "첨부파일 삭제")
     @DeleteMapping("/atch-files/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<Void> deleteFile(@PathVariable Long id) {
         atchFileService.deleteFile(id);
         return ApiResponse.success(null);
@@ -134,7 +123,6 @@ public class AtchFileController {
 
     @Operation(summary = "첨부파일 다운로드")
     @GetMapping("/atch-files/{id}/download")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
         AtchFileDto file = atchFileService.getFile(id);
         InputStream inputStream = atchFileService.downloadFile(id);
@@ -150,7 +138,6 @@ public class AtchFileController {
 
     @Operation(summary = "첨부파일 Presigned URL 조회")
     @GetMapping("/atch-files/{id}/presigned-url")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<Map<String, String>> getPresignedUrl(@PathVariable Long id) {
         String url = atchFileService.getPresignedUrl(id);
         return ApiResponse.success(Map.of("url", url));

@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,14 +43,28 @@ public class ChatService {
     }
 
     /**
-     * 내 채팅방 목록 조회
+     * 내 채팅방 목록 조회 (N+1 최적화 - FETCH JOIN 활용)
      */
     public List<ChatRoomDto> getMyChatRooms(Long userId) {
         List<ChatRoom> chatRooms = chatRoomRepository.findAllByUserIdOrderByLastMessageAtDesc(userId);
 
         return chatRooms.stream()
                 .map(room -> {
-                    List<ChatRoomUserDto> participants = getParticipants(room.getId());
+                    // 1:1 채팅은 모든 참여자 (나간 사용자 포함), 그룹 채팅은 활성 참여자만
+                    List<ChatRoomUserDto> participants;
+                    if (room.getType() == ChatRoomType.PRIVATE) {
+                        // 1:1 채팅: 별도 쿼리로 모든 참여자 조회 (나간 사용자 이름 표시 위해)
+                        participants = chatRoomUserRepository.findAllParticipantsByRoomId(room.getId()).stream()
+                                .map(ChatRoomUserDto::from)
+                                .collect(Collectors.toList());
+                    } else {
+                        // 그룹 채팅: FETCH JOIN으로 가져온 활성 참여자만 사용
+                        participants = room.getParticipants().stream()
+                                .filter(ChatRoomUser::getIsActive)
+                                .map(ChatRoomUserDto::from)
+                                .collect(Collectors.toList());
+                    }
+
                     int unreadCount = getUnreadCount(room.getId(), userId);
                     return ChatRoomDto.from(room, participants, unreadCount);
                 })
@@ -168,7 +184,11 @@ public class ChatService {
             throw new BusinessException(ErrorCode.ACCESS_DENIED, "채팅방 참여자가 아닙니다");
         }
 
-        List<ChatRoomUserDto> participants = getParticipants(roomId);
+        // 1:1 채팅은 모든 참여자 (나간 사용자 포함), 그룹은 활성 참여자만
+        List<ChatRoomUserDto> participants = chatRoom.getType() == ChatRoomType.PRIVATE
+                ? getAllParticipants(roomId)
+                : getParticipants(roomId);
+
         int unreadCount = getUnreadCount(roomId, userId);
         return ChatRoomDto.from(chatRoom, participants, unreadCount);
     }
@@ -185,6 +205,14 @@ public class ChatService {
                 .map(ChatMessageDto::from);
     }
 
+    // 파일 업로드 제한 상수
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final List<String> ALLOWED_EXTENSIONS = List.of(
+            "jpg", "jpeg", "png", "gif", "webp",  // 이미지
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt",  // 문서
+            "zip", "rar", "7z"  // 압축
+    );
+
     /**
      * 메시지 전송
      */
@@ -195,6 +223,17 @@ public class ChatService {
 
         if (!chatRoomUserRepository.isParticipant(roomId, senderId)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED, "채팅방 참여자가 아닙니다");
+        }
+
+        // 1:1 채팅에서 나간 상대방 다시 활성화 (rejoin)
+        List<Long> rejoinedUserIds = new java.util.ArrayList<>();
+        if (chatRoom.getType() == ChatRoomType.PRIVATE) {
+            rejoinedUserIds = rejoinInactiveParticipants(roomId, senderId);
+        }
+
+        // 파일 첨부 시 검증
+        if (request.getType() == MessageType.FILE || request.getType() == MessageType.IMAGE) {
+            validateFileUpload(request);
         }
 
         User sender = userRepository.findById(senderId)
@@ -219,14 +258,50 @@ public class ChatService {
 
         ChatMessageDto messageDto = ChatMessageDto.from(message);
 
-        // WebSocket으로 메시지 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/chat/room/" + roomId, messageDto);
+        // 트랜잭션 커밋 후 WebSocket 전송 (DB 커넥션 점유 시간 최소화)
+        final Long finalRoomId = roomId;
+        final Long finalSenderId = senderId;
+        final List<Long> finalRejoinedUserIds = rejoinedUserIds;
+        final ChatRoomType roomType = chatRoom.getType();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // WebSocket으로 메시지 브로드캐스트
+                messagingTemplate.convertAndSend("/topic/chat/room/" + finalRoomId, messageDto);
+                // 참여자들에게 새 메시지 알림 및 읽지 않은 메시지 수 업데이트
+                notifyNewMessage(finalRoomId, finalSenderId, messageDto);
+                notifyUnreadCount(finalRoomId, finalSenderId);
 
-        // 참여자들에게 새 메시지 알림 및 읽지 않은 메시지 수 업데이트
-        notifyNewMessage(roomId, senderId, messageDto);
-        notifyUnreadCount(roomId, senderId);
+                // 재참여한 사용자가 있으면 채팅방 목록 갱신 알림
+                if (!finalRejoinedUserIds.isEmpty()) {
+                    notifyParticipantsChanged(finalRoomId, roomType);
+                    // 재참여한 사용자들에게 채팅방 목록 추가 알림
+                    notifyRoomToRejoinedUsers(finalRoomId, finalRejoinedUserIds);
+                }
+            }
+        });
 
         return messageDto;
+    }
+
+    /**
+     * 1:1 채팅에서 비활성 참여자 재활성화
+     * @return 재참여한 사용자 ID 목록
+     */
+    private List<Long> rejoinInactiveParticipants(Long roomId, Long senderId) {
+        List<ChatRoomUser> allParticipants = chatRoomUserRepository.findAllParticipantsByRoomId(roomId);
+        List<Long> rejoinedUserIds = new java.util.ArrayList<>();
+
+        for (ChatRoomUser participant : allParticipants) {
+            // 보낸 사람이 아니고 비활성 상태인 경우 재활성화
+            if (!participant.getUser().getId().equals(senderId) && !participant.getIsActive()) {
+                participant.rejoin();
+                rejoinedUserIds.add(participant.getUser().getId());
+                log.info("[Chat] User {} rejoined room {} by message from user {}",
+                        participant.getUser().getId(), roomId, senderId);
+            }
+        }
+        return rejoinedUserIds;
     }
 
     /**
@@ -245,6 +320,9 @@ public class ChatService {
      */
     @Transactional
     public void leaveRoom(Long roomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "채팅방을 찾을 수 없습니다"));
+
         ChatRoomUser participant = chatRoomUserRepository.findByRoomIdAndUserId(roomId, userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ACCESS_DENIED, "채팅방 참여자가 아닙니다"));
 
@@ -252,7 +330,43 @@ public class ChatService {
 
         // 시스템 메시지 전송
         User user = participant.getUser();
-        sendSystemMessage(roomId, user.getName() + "님이 채팅방을 나갔습니다.");
+        String userName = user.getName();
+
+        // 트랜잭션 커밋 후 WebSocket 알림
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                sendSystemMessage(roomId, userName + "님이 채팅방을 나갔습니다.");
+
+                // 참여자 목록 변경 알림 (그룹 채팅의 경우 인원수 업데이트용)
+                notifyParticipantsChanged(roomId, chatRoom.getType());
+            }
+        });
+    }
+
+    /**
+     * 참여자 목록 변경 알림
+     */
+    private void notifyParticipantsChanged(Long roomId, ChatRoomType roomType) {
+        // 1:1 채팅은 모든 참여자, 그룹 채팅은 활성 참여자만
+        List<ChatRoomUserDto> participants = roomType == ChatRoomType.PRIVATE
+                ? getAllParticipants(roomId)
+                : getParticipants(roomId);
+
+        // 채팅방 참여자 변경 알림 브로드캐스트
+        messagingTemplate.convertAndSend(
+                "/topic/chat/room/" + roomId + "/participants",
+                participants
+        );
+    }
+
+    /**
+     * 모든 참여자 조회 (활성 + 비활성) - 1:1 채팅용
+     */
+    private List<ChatRoomUserDto> getAllParticipants(Long roomId) {
+        return chatRoomUserRepository.findAllParticipantsByRoomId(roomId).stream()
+                .map(ChatRoomUserDto::from)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -295,6 +409,30 @@ public class ChatService {
 
     // === Private Helper Methods ===
 
+    /**
+     * 파일 업로드 검증
+     */
+    private void validateFileUpload(ChatMessageRequest request) {
+        // 파일 크기 검증
+        if (request.getFileSize() != null && request.getFileSize() > MAX_FILE_SIZE) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+                    "파일 크기는 10MB를 초과할 수 없습니다");
+        }
+
+        // 파일 확장자 검증
+        if (request.getFileName() != null) {
+            String fileName = request.getFileName().toLowerCase();
+            String extension = fileName.contains(".")
+                    ? fileName.substring(fileName.lastIndexOf(".") + 1)
+                    : "";
+
+            if (!ALLOWED_EXTENSIONS.contains(extension)) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE,
+                        "허용되지 않는 파일 형식입니다. 허용 형식: " + String.join(", ", ALLOWED_EXTENSIONS));
+            }
+        }
+    }
+
     private List<ChatRoomUserDto> getParticipants(Long roomId) {
         return chatRoomUserRepository.findActiveParticipantsByRoomId(roomId).stream()
                 .map(ChatRoomUserDto::from)
@@ -334,6 +472,23 @@ public class ChatService {
                 room
         );
         log.debug("Sent new room notification to user {}: roomId={}", userId, room.getId());
+    }
+
+    /**
+     * 재참여한 사용자들에게 채팅방 목록 추가 알림
+     */
+    private void notifyRoomToRejoinedUsers(Long roomId, List<Long> rejoinedUserIds) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+        if (chatRoom == null) return;
+
+        List<ChatRoomUserDto> participants = getAllParticipants(roomId);
+
+        for (Long userId : rejoinedUserIds) {
+            int unreadCount = getUnreadCount(roomId, userId);
+            ChatRoomDto roomDto = ChatRoomDto.from(chatRoom, participants, unreadCount);
+            notifyNewRoom(userId, roomDto);
+            log.info("[Chat] Sent room notification to rejoined user {}: roomId={}", userId, roomId);
+        }
     }
 
     private void notifyNewMessage(Long roomId, Long senderId, ChatMessageDto message) {

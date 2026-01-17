@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,28 +21,24 @@ public class MenuController {
 
     @Operation(summary = "메뉴 전체 목록", description = "사이트의 모든 메뉴를 조회합니다.")
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<List<MenuDto>> getMenus(@PathVariable String siteCode) {
         return ApiResponse.success(menuService.getMenus(siteCode));
     }
 
     @Operation(summary = "메뉴 트리 조회", description = "사이트의 메뉴를 트리 구조로 조회합니다.")
     @GetMapping("/tree")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<List<MenuTreeDto>> getMenuTree(@PathVariable String siteCode) {
         return ApiResponse.success(menuService.getMenuTree(siteCode));
     }
 
     @Operation(summary = "활성 메뉴 트리 조회", description = "사이트의 활성화된 메뉴만 트리 구조로 조회합니다.")
     @GetMapping("/tree/active")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<MenuTreeDto>> getActiveMenuTree(@PathVariable String siteCode) {
         return ApiResponse.success(menuService.getActiveMenuTree(siteCode));
     }
 
     @Operation(summary = "메뉴 상세 조회", description = "특정 메뉴의 상세 정보를 조회합니다.")
     @GetMapping("/{menuId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<MenuDto> getMenu(
             @PathVariable String siteCode,
             @PathVariable Long menuId) {
@@ -52,14 +47,12 @@ public class MenuController {
 
     @Operation(summary = "하위 메뉴 조회", description = "특정 메뉴의 하위 메뉴를 조회합니다.")
     @GetMapping("/{parentId}/children")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<List<MenuDto>> getChildMenus(@PathVariable Long parentId) {
         return ApiResponse.success(menuService.getChildMenus(parentId));
     }
 
     @Operation(summary = "메뉴 생성", description = "새로운 메뉴를 생성합니다.")
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<MenuDto> createMenu(
             @PathVariable String siteCode,
             @Valid @RequestBody MenuCreateRequest request) {
@@ -68,7 +61,6 @@ public class MenuController {
 
     @Operation(summary = "메뉴 수정", description = "메뉴 정보를 수정합니다.")
     @PutMapping("/{menuId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<MenuDto> updateMenu(
             @PathVariable String siteCode,
             @PathVariable Long menuId,
@@ -78,7 +70,6 @@ public class MenuController {
 
     @Operation(summary = "메뉴 삭제", description = "메뉴를 삭제합니다. 하위 메뉴도 함께 삭제됩니다.")
     @DeleteMapping("/{menuId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<Void> deleteMenu(
             @PathVariable String siteCode,
             @PathVariable Long menuId) {
@@ -88,7 +79,6 @@ public class MenuController {
 
     @Operation(summary = "메뉴 정렬", description = "메뉴의 순서와 부모를 일괄 변경합니다.")
     @PutMapping("/sort")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<Void> sortMenus(
             @PathVariable String siteCode,
             @Valid @RequestBody MenuSortRequest request) {

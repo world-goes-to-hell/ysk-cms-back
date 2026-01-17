@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "활동 로그", description = "사용자 활동 로그 조회 API")
@@ -24,7 +23,6 @@ public class ActivityLogController {
 
     @Operation(summary = "전체 활동 로그 조회", description = "모든 사이트의 활동 로그를 페이지네이션으로 조회합니다.")
     @GetMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ApiResponse<PageResponse<ActivityLogDto>> getAllActivityLogs(
             @RequestParam(required = false) ActivityType activityType,
             @RequestParam(required = false) String targetType,
@@ -36,7 +34,6 @@ public class ActivityLogController {
 
     @Operation(summary = "사이트별 활동 로그 조회", description = "특정 사이트의 활동 로그를 페이지네이션으로 조회합니다.")
     @GetMapping("/sites/{siteCode}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<PageResponse<ActivityLogDto>> getActivityLogsBySite(
             @PathVariable String siteCode,
             @RequestParam(required = false) ActivityType activityType,
@@ -49,7 +46,6 @@ public class ActivityLogController {
 
     @Operation(summary = "사용자별 활동 로그 조회", description = "특정 사용자의 활동 로그를 페이지네이션으로 조회합니다.")
     @GetMapping("/users/{userId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN')")
     public ApiResponse<PageResponse<ActivityLogDto>> getActivityLogsByUser(
             @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable

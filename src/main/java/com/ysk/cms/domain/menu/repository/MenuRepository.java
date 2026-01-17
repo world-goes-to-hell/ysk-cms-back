@@ -42,4 +42,8 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     Integer findMaxSortOrderByParentId(@Param("parentId") Long parentId);
 
     boolean existsBySiteCodeAndCode(String siteCode, String code);
+
+    // roles가 설정된 모든 활성 메뉴 조회 (동적 권한 체크용)
+    @Query("SELECT m FROM Menu m WHERE m.roles IS NOT NULL AND m.roles <> '' AND m.status = 'ACTIVE' AND m.deleted = false")
+    List<Menu> findAllWithRoles();
 }

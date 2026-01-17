@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +28,6 @@ public class BoardArticleReplyController {
 
     @Operation(summary = "댓글 목록 조회 (트리 구조)")
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<BoardArticleReplyDto>> getReplies(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -39,7 +37,6 @@ public class BoardArticleReplyController {
 
     @Operation(summary = "댓글 목록 조회 (페이징)")
     @GetMapping("/paged")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageResponse<BoardArticleReplyDto>> getRepliesPaged(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -54,7 +51,6 @@ public class BoardArticleReplyController {
 
     @Operation(summary = "댓글 상세 조회")
     @GetMapping("/{replyId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<BoardArticleReplyDto> getReply(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -66,7 +62,6 @@ public class BoardArticleReplyController {
     @Operation(summary = "댓글 작성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<BoardArticleReplyDto> createReply(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -77,7 +72,6 @@ public class BoardArticleReplyController {
 
     @Operation(summary = "댓글 수정")
     @PutMapping("/{replyId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<BoardArticleReplyDto> updateReply(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -90,7 +84,6 @@ public class BoardArticleReplyController {
     @Operation(summary = "댓글 삭제")
     @DeleteMapping("/{replyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<Void> deleteReply(
             @PathVariable String siteCode,
             @PathVariable String boardCode,
@@ -102,7 +95,6 @@ public class BoardArticleReplyController {
 
     @Operation(summary = "댓글 수 조회")
     @GetMapping("/count")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<Long> getReplyCount(@PathVariable Long articleId) {
         return ApiResponse.success(replyService.getReplyCount(articleId));
     }

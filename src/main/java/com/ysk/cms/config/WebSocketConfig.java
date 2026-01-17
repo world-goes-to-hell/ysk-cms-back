@@ -56,16 +56,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
-                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                        String token = authHeader.substring(7);
-                        try {
-                            jwtTokenProvider.validateToken(token);
-                            Authentication auth = jwtTokenProvider.getAuthentication(token);
-                            accessor.setUser(auth);
-                            log.info("[WebSocket] User connected: {}", auth.getName());
-                        } catch (Exception e) {
-                            log.warn("[WebSocket] Invalid token: {}", e.getMessage());
-                        }
+
+                    // 인증 헤더가 없으면 연결 차단
+                    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                        log.warn("[WebSocket] Connection rejected: No valid Authorization header");
+                        throw new IllegalArgumentException("인증이 필요합니다");
+                    }
+
+                    String token = authHeader.substring(7);
+                    try {
+                        jwtTokenProvider.validateToken(token);
+                        Authentication auth = jwtTokenProvider.getAuthentication(token);
+                        accessor.setUser(auth);
+                        log.info("[WebSocket] User connected: {}", auth.getName());
+                    } catch (Exception e) {
+                        log.warn("[WebSocket] Connection rejected: Invalid token - {}", e.getMessage());
+                        throw new IllegalArgumentException("유효하지 않은 토큰입니다");
                     }
                 }
                 return message;

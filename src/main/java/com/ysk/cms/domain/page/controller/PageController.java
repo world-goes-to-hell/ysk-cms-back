@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +29,6 @@ public class PageController {
 
     @Operation(summary = "페이지 목록 조회")
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageResponse<PageListDto>> getPages(
             @PathVariable String siteCode,
             @PageableDefault(size = 20, sort = "sortOrder", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -39,21 +37,18 @@ public class PageController {
 
     @Operation(summary = "루트 페이지 목록 조회 (트리 구조)")
     @GetMapping("/tree")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<PageDto>> getPageTree(@PathVariable String siteCode) {
         return ApiResponse.success(pageService.getRootPages(siteCode));
     }
 
     @Operation(summary = "발행된 페이지 목록 조회")
     @GetMapping("/published")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<PageListDto>> getPublishedPages(@PathVariable String siteCode) {
         return ApiResponse.success(pageService.getPublishedPages(siteCode));
     }
 
     @Operation(summary = "페이지 상세 조회")
     @GetMapping("/{pageId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageDto> getPage(
             @PathVariable String siteCode,
             @PathVariable Long pageId) {
@@ -62,7 +57,6 @@ public class PageController {
 
     @Operation(summary = "슬러그로 페이지 조회")
     @GetMapping("/slug/{slug}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<PageDto> getPageBySlug(
             @PathVariable String siteCode,
             @PathVariable String slug) {
@@ -71,7 +65,6 @@ public class PageController {
 
     @Operation(summary = "하위 페이지 목록 조회")
     @GetMapping("/{parentId}/children")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR', 'VIEWER')")
     public ApiResponse<List<PageListDto>> getChildPages(
             @PathVariable String siteCode,
             @PathVariable Long parentId) {
@@ -81,7 +74,6 @@ public class PageController {
     @Operation(summary = "페이지 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<PageDto> createPage(
             @PathVariable String siteCode,
             @Valid @RequestBody PageCreateRequest request) {
@@ -90,7 +82,6 @@ public class PageController {
 
     @Operation(summary = "페이지 수정")
     @PutMapping("/{pageId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<PageDto> updatePage(
             @PathVariable String siteCode,
             @PathVariable Long pageId,
@@ -101,7 +92,6 @@ public class PageController {
     @Operation(summary = "페이지 삭제")
     @DeleteMapping("/{pageId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<Void> deletePage(
             @PathVariable String siteCode,
             @PathVariable Long pageId) {
@@ -111,7 +101,6 @@ public class PageController {
 
     @Operation(summary = "페이지 발행")
     @PatchMapping("/{pageId}/publish")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SITE_ADMIN', 'EDITOR')")
     public ApiResponse<PageDto> publishPage(
             @PathVariable String siteCode,
             @PathVariable Long pageId) {

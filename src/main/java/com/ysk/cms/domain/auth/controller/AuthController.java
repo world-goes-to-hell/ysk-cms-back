@@ -9,6 +9,7 @@ import com.ysk.cms.domain.auth.dto.RoleDto;
 import com.ysk.cms.domain.auth.dto.TokenRefreshRequest;
 import com.ysk.cms.domain.auth.dto.TokenRefreshResponse;
 import com.ysk.cms.domain.auth.service.AuthService;
+import com.ysk.cms.security.annotation.SkipMenuAuth;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@SkipMenuAuth
 public class AuthController {
 
     private final AuthService authService;

@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,7 +51,6 @@ public class SiteController {
 
     @Operation(summary = "사이트 생성", description = "새로운 사이트를 생성합니다.")
     @PostMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SiteDto>> create(@Valid @RequestBody SiteCreateRequest request) {
         SiteDto site = siteService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -61,7 +59,6 @@ public class SiteController {
 
     @Operation(summary = "사이트 수정", description = "사이트 정보를 수정합니다.")
     @PutMapping("/{code}")
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<ApiResponse<SiteDto>> update(
             @PathVariable String code,
             @Valid @RequestBody SiteUpdateRequest request) {
@@ -71,7 +68,6 @@ public class SiteController {
 
     @Operation(summary = "사이트 삭제", description = "사이트를 삭제합니다. (Soft Delete)")
     @DeleteMapping("/{code}")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String code) {
         siteService.delete(code);
         return ResponseEntity.ok(ApiResponse.success("사이트가 삭제되었습니다."));

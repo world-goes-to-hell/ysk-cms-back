@@ -15,12 +15,23 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     /**
      * 사용자가 참여중인 모든 채팅방 조회 (lastMessageAt 기준 최신순)
+     * participants와 user를 함께 FETCH하여 N+1 문제 방지
      */
     @Query("SELECT DISTINCT cr FROM ChatRoom cr " +
-           "JOIN cr.participants p " +
+           "LEFT JOIN FETCH cr.participants p " +
+           "LEFT JOIN FETCH p.user " +
            "WHERE p.user.id = :userId AND p.isActive = true " +
            "ORDER BY cr.lastMessageAt DESC NULLS LAST")
     List<ChatRoom> findAllByUserIdOrderByLastMessageAtDesc(@Param("userId") Long userId);
+
+    /**
+     * 채팅방 ID 목록으로 읽지 않은 메시지 수 일괄 조회를 위한 메서드
+     */
+    @Query("SELECT cr FROM ChatRoom cr " +
+           "LEFT JOIN FETCH cr.participants p " +
+           "LEFT JOIN FETCH p.user " +
+           "WHERE cr.id IN :roomIds")
+    List<ChatRoom> findAllByIdWithParticipants(@Param("roomIds") List<Long> roomIds);
 
     /**
      * 두 사용자 간의 1:1 채팅방 조회
