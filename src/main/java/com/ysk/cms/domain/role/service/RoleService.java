@@ -36,7 +36,7 @@ public class RoleService {
     public RoleDto createRole(CreateRoleRequest request) {
         // 중복 체크
         if (roleRepository.existsByName(request.getName())) {
-            throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE, "이미 존재하는 역할명입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_ROLE_NAME);
         }
 
         Role role = Role.builder()
@@ -56,7 +56,7 @@ public class RoleService {
         // 이름 변경 시 중복 체크
         if (request.getName() != null && !request.getName().equals(role.getName())) {
             if (roleRepository.existsByName(request.getName())) {
-                throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE, "이미 존재하는 역할명입니다.");
+                throw new BusinessException(ErrorCode.DUPLICATE_ROLE_NAME);
             }
         }
 
@@ -72,7 +72,7 @@ public class RoleService {
 
         // 시스템 기본 역할은 삭제 불가
         if (isSystemRole(role.getName())) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "시스템 기본 역할은 삭제할 수 없습니다.");
+            throw new BusinessException(ErrorCode.SYSTEM_ROLE_NOT_DELETABLE);
         }
 
         roleRepository.delete(role);

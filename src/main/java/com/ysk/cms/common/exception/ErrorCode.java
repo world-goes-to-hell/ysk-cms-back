@@ -67,7 +67,11 @@ public enum ErrorCode {
     MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "MN001", "메뉴를 찾을 수 없습니다."),
     DUPLICATE_MENU_CODE(HttpStatus.CONFLICT, "MN002", "이미 존재하는 메뉴 코드입니다."),
     INVALID_MENU_PARENT(HttpStatus.BAD_REQUEST, "MN003", "자기 자신을 상위 메뉴로 지정할 수 없습니다."),
-    CIRCULAR_MENU_REFERENCE(HttpStatus.BAD_REQUEST, "MN004", "메뉴 순환 참조가 발생했습니다.");
+    CIRCULAR_MENU_REFERENCE(HttpStatus.BAD_REQUEST, "MN004", "메뉴 순환 참조가 발생했습니다."),
+
+    // Role
+    DUPLICATE_ROLE_NAME(HttpStatus.CONFLICT, "R001", "이미 존재하는 역할명입니다."),
+    SYSTEM_ROLE_NOT_DELETABLE(HttpStatus.FORBIDDEN, "R002", "시스템 기본 역할은 삭제할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
