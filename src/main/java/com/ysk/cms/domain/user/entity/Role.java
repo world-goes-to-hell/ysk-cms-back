@@ -37,4 +37,13 @@ public class Role extends BaseEntity {
     public void removePermission(Permission permission) {
         this.permissions.remove(permission);
     }
+
+    public void update(String name, String description) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (description != null) {
+            this.description = description;
+        }
+    }
 }
