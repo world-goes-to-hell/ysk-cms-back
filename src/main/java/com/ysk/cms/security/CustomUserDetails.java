@@ -1,6 +1,6 @@
 package com.ysk.cms.security;
 
-import com.ysk.cms.domain.user.entity.User;
+import com.ysk.cms.domain.admin.user.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

@@ -159,10 +159,10 @@ CREATE TABLE board_article_replies (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 4. 페이지 테이블
+-- 4. 컨텐츠 테이블
 -- =============================================
 
-CREATE TABLE pages (
+CREATE TABLE contents (
     id BIGINT NOT NULL AUTO_INCREMENT,
     site_id BIGINT NOT NULL,
     parent_id BIGINT,
@@ -177,10 +177,10 @@ CREATE TABLE pages (
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE KEY uk_pages_site_slug (site_id, slug),
-    INDEX idx_pages_parent (parent_id),
-    CONSTRAINT fk_pages_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
-    CONSTRAINT fk_pages_parent FOREIGN KEY (parent_id) REFERENCES pages(id) ON DELETE SET NULL
+    UNIQUE KEY uk_contents_site_slug (site_id, slug),
+    INDEX idx_contents_parent (parent_id),
+    CONSTRAINT fk_contents_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    CONSTRAINT fk_contents_parent FOREIGN KEY (parent_id) REFERENCES contents(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -272,7 +272,38 @@ CREATE TABLE admin_menus (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 8. 게시판 타입 테이블
+-- 8. 사용자 메뉴 테이블
+-- =============================================
+
+CREATE TABLE user_menus (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    site_id BIGINT NOT NULL,
+    parent_id BIGINT,
+    name VARCHAR(100) NOT NULL,
+    code VARCHAR(50),
+    type VARCHAR(20) NOT NULL DEFAULT 'INTERNAL',
+    url VARCHAR(500),
+    icon VARCHAR(50),
+    sort_order INT NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    target VARCHAR(20) DEFAULT '_self',
+    description VARCHAR(500),
+    deleted TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_user_menus_site_code (site_id, code),
+    INDEX idx_user_menu_site (site_id),
+    INDEX idx_user_menu_parent (parent_id),
+    INDEX idx_user_menu_sort (site_id, parent_id, sort_order),
+    CONSTRAINT fk_user_menus_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_menus_parent FOREIGN KEY (parent_id) REFERENCES user_menus(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 9. 게시판 타입 테이블
 -- =============================================
 
 CREATE TABLE board_types (
@@ -297,7 +328,7 @@ CREATE TABLE board_types (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 9. 채팅 테이블
+-- 10. 채팅 테이블
 -- =============================================
 
 CREATE TABLE chat_rooms (

@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/api/auth/roles",
             "/api/public/**",
             "/api/dev/**",
+            "/api/analytics/track/**",  // Analytics 트래킹 API
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/v3/api-docs/**",
@@ -105,9 +106,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://localhost:8081",
+        // localhost 모든 포트 허용 (개발 환경)
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
                 "https://intricate-reef-484002-s4.web.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

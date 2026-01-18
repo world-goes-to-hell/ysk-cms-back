@@ -1,9 +1,9 @@
 package com.ysk.cms.config;
 
-import com.ysk.cms.domain.user.entity.*;
-import com.ysk.cms.domain.user.repository.PermissionRepository;
-import com.ysk.cms.domain.user.repository.RoleRepository;
-import com.ysk.cms.domain.user.repository.UserRepository;
+import com.ysk.cms.domain.admin.user.entity.*;
+import com.ysk.cms.domain.admin.user.repository.PermissionRepository;
+import com.ysk.cms.domain.admin.user.repository.RoleRepository;
+import com.ysk.cms.domain.admin.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

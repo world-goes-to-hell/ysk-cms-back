@@ -2,8 +2,8 @@ package com.ysk.cms.security;
 
 import com.ysk.cms.common.exception.BusinessException;
 import com.ysk.cms.common.exception.ErrorCode;
-import com.ysk.cms.domain.user.entity.User;
-import com.ysk.cms.domain.user.repository.UserRepository;
+import com.ysk.cms.domain.admin.user.entity.User;
+import com.ysk.cms.domain.admin.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

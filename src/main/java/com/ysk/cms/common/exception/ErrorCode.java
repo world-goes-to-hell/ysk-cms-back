@@ -53,9 +53,9 @@ public enum ErrorCode {
     PARENT_REPLY_NOT_FOUND(HttpStatus.NOT_FOUND, "RP002", "상위 댓글을 찾을 수 없습니다."),
     COMMENT_DISABLED(HttpStatus.FORBIDDEN, "RP003", "이 게시판에서는 댓글 기능이 비활성화되어 있습니다."),
 
-    // Page
-    PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "PG001", "페이지를 찾을 수 없습니다."),
-    DUPLICATE_PAGE_SLUG(HttpStatus.CONFLICT, "PG002", "이미 존재하는 페이지 슬러그입니다."),
+    // Contents (정적 페이지)
+    CONTENTS_NOT_FOUND(HttpStatus.NOT_FOUND, "CT001", "컨텐츠를 찾을 수 없습니다."),
+    DUPLICATE_CONTENTS_SLUG(HttpStatus.CONFLICT, "CT002", "이미 존재하는 컨텐츠 슬러그입니다."),
 
     // AtchFile (첨부파일)
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "AF001", "첨부파일을 찾을 수 없습니다."),
@@ -71,7 +71,13 @@ public enum ErrorCode {
 
     // Role
     DUPLICATE_ROLE_NAME(HttpStatus.CONFLICT, "R001", "이미 존재하는 역할명입니다."),
-    SYSTEM_ROLE_NOT_DELETABLE(HttpStatus.FORBIDDEN, "R002", "시스템 기본 역할은 삭제할 수 없습니다.");
+    SYSTEM_ROLE_NOT_DELETABLE(HttpStatus.FORBIDDEN, "R002", "시스템 기본 역할은 삭제할 수 없습니다."),
+
+    // UserMenu (사용자 메뉴)
+    USER_MENU_NOT_FOUND(HttpStatus.NOT_FOUND, "UM001", "사용자 메뉴를 찾을 수 없습니다."),
+    DUPLICATE_USER_MENU_CODE(HttpStatus.CONFLICT, "UM002", "이미 존재하는 사용자 메뉴 코드입니다."),
+    INVALID_USER_MENU_PARENT(HttpStatus.BAD_REQUEST, "UM003", "자기 자신을 상위 메뉴로 지정할 수 없습니다."),
+    CIRCULAR_USER_MENU_REFERENCE(HttpStatus.BAD_REQUEST, "UM004", "메뉴 순환 참조가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;

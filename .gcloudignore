@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+.vscode
+
+# Gradle
+.gradle
+build
+out
+
+# Claude
+.claude
+
+# Misc
+*.log
+*.tmp
+nul
